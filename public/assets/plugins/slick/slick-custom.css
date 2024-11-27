@@ -1,0 +1,132 @@
+
+.slick-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: -50px;
+}
+
+.slick-dots li {
+  list-style: none;
+  display: inline-block;
+  font-size: 0;
+  height: 10px;
+  width: 10px;
+  border-radius: 100%;
+  margin: 0 5px;
+  background-color: #c0c0c0;
+  cursor: pointer;
+  margin-top: 0;
+}
+
+.slick-dots li button {
+  padding: 0;
+  width: 0;
+  height: 0;
+}
+
+.slick-dots li button::before {
+  display: none;
+}
+
+.slick-dots li.slick-active {
+  background-color: #f8c506;
+  height: 15px;
+  width: 15px;
+}
+
+.slick-dotted.slick-slider {
+  margin-bottom: 60px;
+}
+
+.slick-slider-arrows .slick-arrow {
+  background-color: #fff !important;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  right: auto;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  line-height: 48px;
+  display: block;
+  border: 1px solid #e6ecf0;
+  border-radius: 100%;
+  text-align: center;
+  color: var(--primary-color);
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  -webkit-transition: all 0.3s ease 0s;
+  -o-transition: all 0.3s ease 0s;
+  transition: all 0.3s ease 0s;
+}
+
+.slick-slider-arrows .slick-arrow::before {
+  display: none;
+}
+
+.slick-slider-arrows .slick-arrow::after {
+  content: "";
+  font-family: 'Font Awesome 5 Pro';
+  font-size: 30px;
+  color: var(--primary-color);
+  line-height: 48px;
+  font-weight: 200;
+}
+
+.slick-slider-arrows .slick-next {
+  right: 15px;
+  left: auto;
+}
+
+.slick-slider-arrows .slick-next::after {
+  content: "\f105";
+}
+
+.slick-slider-arrows .slick-prev {
+  left: 15px;
+  z-index: 1;
+}
+
+.slick-slider-arrows .slick-prev::after {
+  content: "\f104";
+}
+
+.slick-slider-arrows:hover .slick-arrow {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 991.98px) {
+  .slick-mobile-arrows {
+    margin-bottom: 50px !important;
+  }
+  .slick-mobile-arrows .slick-arrow {
+  	top: auto;
+  	bottom: -70px;
+  	opacity: 1;
+  	visibility: visible;
+  	transform: none;
+  }
+  .slick-mobile-arrows .slick-arrow.slick-prev {
+  	left: calc(50% - 60px);
+  }
+  .slick-mobile-arrows .slick-arrow.slick-next {
+  	right: calc(50% - 60px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .slick-slider-arrows:hover .slick-arrow {
+    left: -50px;
+    right: auto;
+  }
+  .slick-slider-arrows:hover .slick-next {
+    right: -50px;
+    left: auto;
+  }
+}

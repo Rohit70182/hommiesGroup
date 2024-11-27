@@ -1,0 +1,15 @@
+{
+    "Notification": true,
+    "Chat": true,
+    "Seo": true,
+    "Logger": true,
+    "Faq": true,
+    "Page": true,
+    "Translation": true,
+    "Smtp": true,
+    "Services": true,
+    "ServiceProvider": true,
+    "BookService": true,
+    "Favourite": true,
+    "Stripe" : true
+}

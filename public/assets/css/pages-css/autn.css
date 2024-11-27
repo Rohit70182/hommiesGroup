@@ -1,0 +1,231 @@
+.user-form-card a,.user-form-card .text-link{
+  color: #6759ff;
+}
+.resend-password-btn{
+	background-color: transparent;
+	border: 0;
+}
+/* Log in page start */
+.sec-ptb .site-logo {
+	width: 100%;
+	padding:0 0 50px;
+	display: block;
+	text-align: center;
+}
+.sec-ptb .site-logo a h1
+{
+	color: #fff !important;
+}
+.form-social-media .social-link li a 
+{
+	color: #6759ff;
+	font-size: 22px;
+	text-align: center;
+}
+.form-scoial-hd h2
+{
+	font-size: 24px;
+	text-align: center;
+	margin: 30px 0 0;
+	position: relative;
+}
+.form-scoial-hd h2::before {
+	content: "";
+	position: absolute;
+	border: 1px solid #6759ff;
+	top: 15px;
+	left: 30px;
+	width: 25%;
+}
+.form-scoial-hd h2::after{
+	content: "";
+	position: absolute;
+	border: 1px solid #6759ff;
+	top: 15px;
+	right: 30px;
+	width: 25%;
+}
+.form-social-media
+{
+	text-align: center;
+}
+.form-social-media .social-link
+{
+	margin: 15px auto 15px;
+	display: inline-flex;
+}
+.login-copyright-menu ul li {
+	list-style: none;
+	display: inline-block;
+	margin-top: 0;
+	margin: 0 20px 10px 0px;
+	font-size: 14px;
+	font-weight: 600;
+}
+.login-copyright-menu.text-center 
+{
+	margin: 20px 0 0;
+}
+.login-copyright-menu.text-center  .resrved-btn
+{
+	color: #6759ff;
+}
+/* Login page end */
+
+/* Registration page start */
+
+.haveacc-btn
+{
+	border: none;
+	background-color: transparent;
+	color: #6759ff;
+	box-shadow: none;
+	text-transform: capitalize;
+	min-width: auto;
+	padding: 0;
+}
+.btn.haveacc-btn:hover
+{
+	border: none;
+	background-color: transparent;
+	color: #6759ff;
+  	box-shadow: none;
+}
+.register-form-remind
+{
+	text-align: center;
+	margin: 40px auto 0;
+}
+.register-form-remind p
+{
+	font-size: 16px;
+	font-weight: 600;
+	color: #312D3C;
+}
+/* Registration page end */
+
+.user-form-card {
+    background-color: #fff;
+    box-shadow: 0 2px 48px 0 rgba(0, 0, 0, .08);
+    border-radius: 8px;
+    padding: 60px 50px 50px;
+    max-width: 850px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
+    margin-bottom: 12px;
+}
+.user-form-card label {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.user-form-remind p {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.info-media .img-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.info-media {
+	text-align: center;
+}
+
+.info-media .img-wrapper input {
+    display: none;
+}
+
+.info-media .img-wrapper .img-main {
+	width: 162px;
+	height: 162px;
+	border-radius: 50%;
+	background-color: #fff;
+	border: 6px solid #2dcd7c;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.info-media .img-wrapper .img-main img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.info-media .img-wrapper label {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: linear-gradient(90.56deg, #25D7FD 3.96%, #2ECC71 99.56%);
+	border: 4px solid #ffffff;
+	position: absolute;
+	right: 0;
+	text-align: center;
+	color: #fff;
+	line-height: 40px;
+	font-size: 20px;
+	bottom: 0;
+	cursor: pointer;
+}
+
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield !important;
+}
+
+.select2-container--default .select2-selection--multiple {
+	border: 1px solid #e6e9fc !important;
+	min-height: 50px !important;
+	padding-right: 20px;
+	padding-left: 10px;
+	border-radius: 0;
+	font-size: 16px;
+	font-weight: 500;
+	appearance: none;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+}
+
+.select2-container--default .select2-selection--multiple ul {
+  min-height: 50px;
+}
+
+
+@media only screen and (max-width:575px){
+	.user-form-card{
+		padding: 40px 20px;
+	}
+	.user-form-title h2{
+		font-size: 27px;
+	}
+	.form-scoial-hd h2::before
+	 {
+		left: 0;
+		width: 15%;
+	}
+	.form-scoial-hd h2::after
+	 {
+		right: 0;
+		width: 15%;
+	}
+	.user-form-remind p {
+		font-size: 14px;
+		font-weight: 600;
+	}
+	.login-copyright-menu ul li 
+	{
+		margin: 0 5px 10px 0px;
+		font-size: 13px;
+	}
+}

@@ -1,0 +1,13 @@
+{
+    "name": "ServiceProvider",
+    "alias": "serviceprovider",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ServiceProvider\\Providers\\ServiceProviderServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

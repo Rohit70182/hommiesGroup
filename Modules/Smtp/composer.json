@@ -1,0 +1,22 @@
+{
+    "name": "nwidart/smtp",
+     "authors": [
+        {
+            "name" : "Shiv Charan Panjeta",
+            "email" : "rohit7305.rk@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Smtp\\": ""
+        }
+    }
+}
