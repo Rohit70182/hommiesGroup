@@ -41,8 +41,7 @@
                             "schema": {
                                 "required": [
                                     "email",
-                                    "password",
-                                    "role"
+                                    "password"
                                 ],
                                 "properties": {
                                     "email": {
@@ -54,11 +53,6 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password2"
-                                    },
-                                    "role": {
-                                        "type": "integer",
-                                        "format": "role 1 for service provider and 2 for user",
-                                        "example": "1"
                                     }
                                 },
                                 "type": "object"
@@ -114,6 +108,133 @@
                 ]
             }
         },
+        "/user/register-provider": {
+            "post": {
+                "tags": [
+                    "users"
+                ],
+                "summary": "Register a new provider",
+                "description": "Register a new provider with additional details",
+                "operationId": "registerProvider",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "password",
+                                    "confirm_password",
+                                    "bio",
+                                    "dob",
+                                    "phone",
+                                    "id_proof_1",
+                                    "id_proof_2"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "provider@mail.com"
+                                    },
+                                    "dob": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-01"
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Experienced provider"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "confirm_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "id_proof_1": {
+                                        "description": "Id proof to upload",
+                                        "type": "file"
+                                    },
+                                    "id_proof_2": {
+                                        "description": "Id proof to upload",
+                                        "type": "file"
+                                    },
+                                    "profile_picture": {
+                                        "description": "Profile file to upload",
+                                        "type": "file"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Validator Error"
+                    },
+                    "401": {
+                        "description": "Authentication Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "provider register successfully"
+                                        },
+                                        "provider": {
+                                            "type": "string",
+                                            "example": "Provider details"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ]
+            }
+        },
         "/user/login": {
             "post": {
                 "tags": [
@@ -137,12 +258,12 @@
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "admin@123"
+                                        "example": "password2"
                                     },
                                     "email": {
                                         "type": "email",
                                         "format": "email",
-                                        "example": "rohit@gmail.in"
+                                        "example": "user1@mail.com"
                                     },
                                     "device_token": {
                                         "type": "string",
@@ -218,7 +339,7 @@
                 "tags": [
                     "users"
                 ],
-                "summary": "",
+                "summary": "Check if the user is authenticated",
                 "operationId": "userCheck",
                 "responses": {
                     "200": {
@@ -228,7 +349,7 @@
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "integer",
+                                            "type": "string",
                                             "example": "User Data!"
                                         }
                                     },
@@ -245,7 +366,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Something went wrong"
+                                            "example": "Unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -260,8 +381,8 @@
                                 "schema": {
                                     "properties": {
                                         "status": {
-                                            "type": "integer",
-                                            "example": "data Not Found!"
+                                            "type": "string",
+                                            "example": "Data not found!"
                                         }
                                     },
                                     "type": "object"
@@ -273,88 +394,6 @@
                 "security": [
                     {
                         "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/user/verify_otp": {
-            "post": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "user otp verification",
-                "description": "user verify",
-                "operationId": "user_verify_otp",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "otp",
-                                    "phone",
-                                    "country_code"
-                                ],
-                                "properties": {
-                                    "otp": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1234"
-                                    },
-                                    "phone": {
-                                        "description": "conatct number",
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "34534534535"
-                                    },
-                                    "country_code": {
-                                        "description": "country code",
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "91"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Otp verified"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "basicAuth": []
                     }
                 ]
             }
@@ -427,83 +466,6 @@
                 ]
             }
         },
-        "/user/resend_otp": {
-            "post": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "user resend otp",
-                "description": "user reset otp",
-                "operationId": "userReset",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "otp"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "user1@mail.com"
-                                    },
-                                    "phone_number": {
-                                        "type": "string",
-                                        "example": "123455"
-                                    },
-                                    "otp": {
-                                        "type": "string",
-                                        "example": "1234"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Otp is sent successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "basicAuth": []
-                    }
-                ]
-            }
-        },
         "/user/profile/update": {
             "post": {
                 "tags": [
@@ -520,12 +482,8 @@
                                 "required": [
                                     "profile_picture",
                                     "dob",
-                                    "phone_number",
                                     "first_name",
-                                    "last_name",
-                                    "country_code",
-                                    "country",
-                                    "gender"
+                                    "last_name"
                                 ],
                                 "properties": {
                                     "profile_picture": {
@@ -533,8 +491,8 @@
                                         "type": "file"
                                     },
                                     "phone_number": {
-                                        "type": "string",
-                                        "example": "123455"
+                                        "type": "numbrer",
+                                        "example": "7018285882"
                                     },
                                     "first_name": {
                                         "type": "string",
@@ -552,35 +510,10 @@
                                         "type": "number",
                                         "example": "india"
                                     },
-                                    "gender": {
-                                        "description": " 1 for male and 2 for female",
-                                        "type": "number",
-                                        "example": "1"
-                                    },
                                     "dob": {
                                         "type": "string",
                                         "format": "date",
                                         "example": "1988-01-01"
-                                    },
-                                    "address_one": {
-                                        "type": "string",
-                                        "example": "address_one"
-                                    },
-                                    "address_two": {
-                                        "type": "string",
-                                        "example": "address_two"
-                                    },
-                                    "state": {
-                                        "type": "string",
-                                        "example": "state"
-                                    },
-                                    "city": {
-                                        "type": "string",
-                                        "example": "cityName"
-                                    },
-                                    "zip": {
-                                        "type": "string",
-                                        "example": "zip"
                                     }
                                 },
                                 "type": "object"
@@ -758,456 +691,6 @@
                                         "status": {
                                             "type": "integer",
                                             "example": "data Not Found!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/user/page": {
-            "get": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "",
-                "operationId": "f826724a0ce2b38a6d561b414f9a8b19",
-                "parameters": [
-                    {
-                        "name": "type",
-                        "in": "query",
-                        "description": "\n     *       TYPE_PRIVACY = 1,\n     *       TYPE_TERM_CONDITION = 2,\n     *       TYPE_ABOUT_US = 3,\n     * ",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "page info",
-                        "content": {
-                            "application/json": {}
-                        }
-                    }
-                }
-            }
-        },
-        "/user/address/add": {
-            "post": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "",
-                "operationId": "addAddress",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "address",
-                                    "city",
-                                    "state",
-                                    "country",
-                                    "postal_code",
-                                    "longitude",
-                                    "latitude",
-                                    "address_type"
-                                ],
-                                "properties": {
-                                    "address": {
-                                        "type": "string",
-                                        "example": "address"
-                                    },
-                                    "address_two": {
-                                        "type": "string",
-                                        "example": "address_two"
-                                    },
-                                    "city": {
-                                        "type": "string",
-                                        "example": "city"
-                                    },
-                                    "state": {
-                                        "type": "string",
-                                        "example": "state"
-                                    },
-                                    "country": {
-                                        "type": "string",
-                                        "example": "countryName"
-                                    },
-                                    "postal_code": {
-                                        "type": "integer",
-                                        "example": "112233"
-                                    },
-                                    "longitude": {
-                                        "type": "string",
-                                        "example": "-25.89"
-                                    },
-                                    "latitude": {
-                                        "type": "string",
-                                        "example": "126.79"
-                                    },
-                                    "address_type": {
-                                        "type": "integer",
-                                        "example": "0 for home 1 for office"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Address Added successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/user/address-list": {
-            "get": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "",
-                "operationId": "AddressList",
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "address": {
-                                            "type": "string",
-                                            "example": "address"
-                                        },
-                                        "address_two": {
-                                            "type": "string",
-                                            "example": "address two"
-                                        },
-                                        "city": {
-                                            "type": "string",
-                                            "example": "city"
-                                        },
-                                        "state": {
-                                            "type": "string",
-                                            "example": "state"
-                                        },
-                                        "country": {
-                                            "type": "string",
-                                            "example": "country"
-                                        },
-                                        "postal_code": {
-                                            "type": "string",
-                                            "example": "115577"
-                                        },
-                                        "latitude": {
-                                            "type": "string",
-                                            "example": "-124.56"
-                                        },
-                                        "longitude": {
-                                            "type": "string",
-                                            "example": "25.89"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/user/address/delete": {
-            "get": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "",
-                "operationId": "AddressDelete",
-                "parameters": [
-                    {
-                        "name": "address_id",
-                        "in": "query",
-                        "description": "address id",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Address Deleted Successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/user/address/update": {
-            "post": {
-                "tags": [
-                    "users"
-                ],
-                "summary": "",
-                "operationId": "updateAddress",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "address_id",
-                                    "address",
-                                    "city",
-                                    "state",
-                                    "country",
-                                    "postal_code",
-                                    "longitude",
-                                    "latitude",
-                                    "address_type"
-                                ],
-                                "properties": {
-                                    "address_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "address": {
-                                        "type": "string",
-                                        "example": "address"
-                                    },
-                                    "address_two": {
-                                        "type": "string",
-                                        "example": "address_two"
-                                    },
-                                    "city": {
-                                        "type": "string",
-                                        "example": "city"
-                                    },
-                                    "state": {
-                                        "type": "string",
-                                        "example": "state"
-                                    },
-                                    "country": {
-                                        "type": "string",
-                                        "example": "countryName"
-                                    },
-                                    "postal_code": {
-                                        "type": "integer",
-                                        "example": "112233"
-                                    },
-                                    "longitude": {
-                                        "type": "string",
-                                        "example": "-25.89"
-                                    },
-                                    "latitude": {
-                                        "type": "string",
-                                        "example": "126.79"
-                                    },
-                                    "address_type": {
-                                        "type": "integer",
-                                        "example": "0 for home 1 for office"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Address Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
                                         }
                                     },
                                     "type": "object"
@@ -5050,6 +4533,11 @@
         {
             "name": "service",
             "description": "service"
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
         }
     ]
 }

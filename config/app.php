@@ -178,6 +178,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\ComposerServiceProvider::class,
         Modules\Logger\Logging\MonologMysqlHandlerServiceProvider::class,
+        Laravel\Sanctum\SanctumServiceProvider::class,
 
     ],
 

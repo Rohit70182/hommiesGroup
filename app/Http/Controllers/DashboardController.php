@@ -41,25 +41,31 @@ class DashboardController extends Controller
 
     public function changePassword(Request $request)
     {
-        $user = Auth::User()->id;
+        $user = Auth::User();
+
         $validator = validator($request->all(), [
             'password' => 'required',
             'password_confirmation' => 'required'
         ]);
+
         if ($validator->fails()) {
             return Redirect()->back()->withInput()->withErrors($validator);
         }
-        if ($request->password == $request->password_confirmation) {
 
+        if ($request->password == $request->password_confirmation) {
             $user->password = Hash::make($request['password']);
+
             if ($user->save()) {
                 Auth::logout();
                 return redirect('/login');
             } else {
                 return redirect()->back()->with('error', "Password Couldn't be Updated.");
             }
+        } else {
+            return redirect()->back()->with('error', "Password and confirmation do not match.");
         }
     }
+
 
     //Logout
     public function logout()
@@ -124,7 +130,7 @@ class DashboardController extends Controller
             'reason' => 'required',
         ]);
         if ($validator->fails()) {
-          
+
             return Redirect()->back()->withInput()->withErrors($validator);
         }
         $savereason = new CancelReason();
@@ -164,7 +170,7 @@ class DashboardController extends Controller
             return Redirect()->back()->withInput()->withErrors($validator);
         }
         $cancelreasons =  CancelReason::where('id', $id)->update(['messages' => $request->reason]);
-        
+
         return redirect()->route('cancelReasons')->with('success', 'Reason Updated Successfully');
     }
 
@@ -176,22 +182,21 @@ class DashboardController extends Controller
         $reasonfordelete->delete();
         return redirect()->back()->with('success', 'Reason Deleted Successfully');
     }
-    
+
     // index of orders 
-    
-    Public function orders(){
-        
-      $orders = OrderDetail::all();
-      return view ('dashboard.orders.index',compact('orders'));
+
+    public function orders()
+    {
+
+        $orders = OrderDetail::all();
+        return view('dashboard.orders.index', compact('orders'));
     }
-    
-    public  function showOrders($id) {
-        
-        $order = OrderDetail::Where('id',$id)->first();
-      
-        return view ('dashboard.orders.view',compact('order'));
-        
-        
+
+    public  function showOrders($id)
+    {
+
+        $order = OrderDetail::Where('id', $id)->first();
+
+        return view('dashboard.orders.view', compact('order'));
     }
-    
 }

@@ -33,14 +33,15 @@ use Illuminate\Routing\Controller as BaseController;
  *   url="https://hommiesgroup.com/api",
  *   description="Live server",
  * )
- *     @OA\SecurityScheme(
+ * @OA\SecurityScheme(
  *     type="http",
  *     in="header",
  *     scheme="bearer",
- *     name="Token based authentication",
+ *     name="Authorization",
  *     securityScheme="sanctum"
- *     )
+ * )
  */
+
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;

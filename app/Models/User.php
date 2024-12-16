@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -29,9 +30,9 @@ class User extends Authenticatable
     const ROLE_ADMIN = 0;
 
     const ROLE_USER = 1;
-    
+
     const STATE_ACTIVE = 1;
-    
+
     const STATE_INACTIVE = 0;
 
     const ROLE_SERVICE_PROVIDER = 2;
@@ -46,7 +47,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    public $appends = ['image_url','certification_url','unread_count'];
+    public $appends = ['unread_count', 'image_url', 'id_proof_1_url', 'id_proof_2_url'];
 
     protected $fillable = [
         'name',
@@ -63,7 +64,10 @@ class User extends Authenticatable
         'last_name',
         'password_reset_token',
         'customer_id',
-        'state_id'
+        'state_id',
+        'access_token',
+        'id_proof_1',
+        'id_proof_2'
     ];
 
     /**
@@ -90,7 +94,7 @@ class User extends Authenticatable
         $list = array(
             self::ROLE_ADMIN => "Admin",
             self::ROLE_SERVICE_PROVIDER => "Service Provider",
-            self::ROLE_USER => "Customer"
+            self::ROLE_USER => "User"
         );
         if ($id === null)
             return $list;
@@ -117,7 +121,7 @@ class User extends Authenticatable
                 return "Not Defined";
         }
     }
-    
+
     public static function getStateOptions($id = null)
     {
         $list = array(
@@ -126,15 +130,15 @@ class User extends Authenticatable
         );
         if ($id === null)
             return $list;
-            return isset($list[$id]) ? $list[$id] : 'Not Defined';
+        return isset($list[$id]) ? $list[$id] : 'Not Defined';
     }
-    
+
     public function getState()
     {
         $list = self::getStateOptions();
         return isset($list[$this->state_id]) ? $list[$this->state_id] : 'Not Defined';
     }
-    
+
 
     public function sendMailToAdmin()
     {
@@ -166,7 +170,7 @@ class User extends Authenticatable
         $key = '';
         $keys = array_merge(range(0, 9), range('a', 'z'));
 
-        for ($i = 0; $i < USER::RESET_KEY; $i ++) {
+        for ($i = 0; $i < USER::RESET_KEY; $i++) {
             $key .= $keys[array_rand($keys)];
         }
         $this->password_reset_token = $key;
@@ -179,67 +183,80 @@ class User extends Authenticatable
 
     public function getImageUrlAttribute()
     {
-        if($this->image){
-            return asset('public/uploads/'.$this->image);
-        } else {
-            return null;
+        if ($this->image) {
+            return asset('public/uploads/' . $this->image);
         }
+        return null;
+    }
+
+    public function getIdProof1UrlAttribute()
+    {
+        if ($this->id_proof_1) {
+            return asset('public/uploads/idproof/' . $this->id_proof_1);
+        }
+        return null;
+    }
+
+    public function getIdProof2UrlAttribute()
+    {
+        if ($this->id_proof_2) {
+            return asset('public/uploads/idproof/' . $this->id_proof_2);
+        }
+        return null;
     }
 
     public function getCertificationUrlAttribute()
     {
-        if($this->image){
-            return asset('public/uploads/'.$this->certifications);
+        if ($this->image) {
+            return asset('public/uploads/' . $this->certifications);
         } else {
             return null;
         }
     }
     public function getUnreadCountAttribute()
     {
-        if(Auth::check()){
-        return Chat::where('from_id',$this->id)->where('to_id',Auth::user()->id)->where('is_read',Chat::READ_NO)->count();
+        if (Auth::check()) {
+            return Chat::where('from_id', $this->id)->where('to_id', Auth::user()->id)->where('is_read', Chat::READ_NO)->count();
         }
-        return  self::STATE_INACTIVE ;
+        return  self::STATE_INACTIVE;
     }
 
     public function servicePrice()
     {
-        return $this->hasMany(ServicePriceList::class , 'created_by_id', 'id');
-        
+        return $this->hasMany(ServicePriceList::class, 'created_by_id', 'id');
     }
 
     public function subServicePrice()
     {
-        return $this->hasMany(SubServicePriceList::class , 'created_by_id', 'id');
-        
+        return $this->hasMany(SubServicePriceList::class, 'created_by_id', 'id');
     }
 
     public function providerServices()
     {
-        return $this->hasMany(ProviderServices::class , 'service_provider_id', 'id');
-        
+        return $this->hasMany(ProviderServices::class, 'service_provider_id', 'id');
     }
 
-    public static function getNearbyData($lat, $long, $radius = null) {
+    public static function getNearbyData($lat, $long, $radius = null)
+    {
 
-    $latitude = $lat;
-    $longitude = $long;
+        $latitude = $lat;
+        $longitude = $long;
 
-    $haversine = "(
+        $haversine = "(
         6371 * acos(
-            cos(radians(" .$latitude. "))
+            cos(radians(" . $latitude . "))
             * cos(radians(`latitude`))
-            * cos(radians(`longitude`) - radians(" .$longitude. "))
-            + sin(radians(" .$latitude. ")) * sin(radians(`latitude`))
+            * cos(radians(`longitude`) - radians(" . $longitude . "))
+            + sin(radians(" . $latitude . ")) * sin(radians(`latitude`))
         )
     )";
-    $users = User::with('servicePrice', 'subServicePrice' , 'providerServices')
-    ->select("*")
-        ->selectRaw("$haversine AS distance")
-        ->having("distance", "<=", $radius)
-        ->orderby("distance", "desc")
-        ->get();
+        $users = User::with('servicePrice', 'subServicePrice', 'providerServices')
+            ->select("*")
+            ->selectRaw("$haversine AS distance")
+            ->having("distance", "<=", $radius)
+            ->orderby("distance", "desc")
+            ->get();
 
-    return $users;
+        return $users;
     }
 }

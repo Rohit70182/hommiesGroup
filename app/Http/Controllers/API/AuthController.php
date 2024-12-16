@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\API;
 
 use App\Models\User;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redirect;
 use Modules\Page\Entities\Page;
 use App\Models\Address;
+use Illuminate\Support\Facades\DB;
 use Mailgun\Mailgun;
 
 class AuthController extends Controller
@@ -39,10 +41,9 @@ class AuthController extends Controller
      *       @OA\MediaType(
      *           mediaType="multipart/form-data",
      *           @OA\Schema(
-     *              required={"email","password","role"},
+     *              required={"email","password"},
      *              @OA\Property(property="email", type="string", format="email", example="user1@mail.com"),
      *              @OA\Property(property="password", type="string", format="password", example="password2"),
-     *              @OA\Property(property="role", type="integer", format="role 1 for service provider and 2 for user", example="1"),
      *           ),
      *       ),
      *   ),
@@ -71,52 +72,172 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $fields = $request->all();
-        
         $validator = Validator::make($fields, [
-            // 'first_name' => 'required|string',
-            'email' => 'required|string|unique:users,email',
-            // 'last_name' => 'required|string',
-            'password' => ['required','string','min:8'],
-            'role' => 'required|integer'
+            'email' => 'required|string|email|unique:users,email',
+            'password' => ['required', 'string', 'min:8']
         ]);
-        
-        if ($validator->fails())
-        {
+
+        if ($validator->fails()) {
             return response([
                 'message' => $validator->errors()
             ], 400);
         }
-        
-        
-        $createUSer = [
-            // 'name' => $fields['first_name'] . ' ' . $fields['last_name'],
-            // 'first_name' => $fields['first_name'],
-            // 'last_name' => $fields['last_name'],
-            'email' => $fields['email'],
-            'role' => 1,
-            'password' => Hash::make($request['password']),
-            // 'customer_id' => 'ch_testcustomer',
-            'state_id' => User::STATE_ACTIVE,
-        ];
-        // $verify_code = Crypt::encryptString($request['email']);
-        //  $mail = Mail::to($fields['email'])->send(new verification($verify_code));
-        if ($user = User::create($createUSer)) {
-            $response = [
-                'user' => $user,
-            ];
+        try {
+            DB::beginTransaction();
+            $user = User::create([
+                'email' => $fields['email'],
+                'password' => Hash::make($fields['password']),
+                'state_id' => User::STATE_ACTIVE,
+                'role' => User::ROLE_USER,
+            ]);
+            $token = $user->createToken('authToken')->plainTextToken;
+            $user->update(['access_token' => $token]);
+            DB::commit();
             return response([
                 'message' => 'User Registered Successfully',
-                'details' => $user
-                
+                // 'access_token' => $token,
+                'user' => $user,
             ], 200);
-            return response($response, 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response([
+                'message' => 'Something went wrong during registration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     *
+     * @OA\Post(
+     * path="/user/register-provider",
+     * operationId="registerProvider",
+     * tags={"users"},
+     * summary="Register a new provider",
+     * description="Register a new provider with additional details",
+     * security={{ "basicAuth": {} }},
+     *      @OA\RequestBody(
+     *       @OA\MediaType(
+     *           mediaType="multipart/form-data",
+     *           @OA\Schema(
+     *              required={"first_name","last_name","email","password","confirm_password","bio","dob","phone","id_proof_1","id_proof_2"},
+     *              @OA\Property(property="first_name", type="string", example="John"),
+     *              @OA\Property(property="last_name", type="string", example="Doe"),
+     *              @OA\Property(property="phone", type="string", example="1234567890"),
+     *              @OA\Property(property="email", type="string", format="email", example="provider@mail.com"),
+     *              @OA\Property(property="dob", type="string", format="date", example="1990-01-01"),
+     *              @OA\Property(property="bio", type="string", example="Experienced provider"),
+     *              @OA\Property(property="password", type="string", format="password", example="password123"),
+     *              @OA\Property(property="confirm_password", type="string", format="password", example="password123"),
+     *              @OA\Property(property="id_proof_1", type="file", description="Id proof to upload"),
+     *              @OA\Property(property="id_proof_2", type="file", description="Id proof to upload"),
+     *              @OA\Property(description="Profile file to upload",property="profile_picture",type="file"),
+     * 
+     *           ),
+     *       ),
+     *   ),
+     *
+     * @OA\Response(
+     *    response=400,
+     *    description="Validator Error"
+     *     ),
+     * @OA\Response(
+     *    response=401,
+     *    description="Authentication Error",
+     *    @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Something went wrong"),
+     *      )
+     *     ),
+     * @OA\Response(
+     *    response=200,
+     *    description="Success",
+     *    @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="provider register successfully"),
+     *          @OA\Property(property="provider", type="string", example="Provider details"),
+     *      )
+     *     ),
+     * )
+     */
+    public function registerProvider(Request $request)
+    {
+        $fields = $request->all();
+
+        $validator = Validator::make($fields, [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'phone' => 'required|string|unique:users,phone',
+            'email' => 'required|string|email|unique:users,email',
+            'dob' => 'required|date',
+            'bio' => 'nullable|string',
+            'password' => 'required|string|min:8',
+            'confirm_password' => 'required|string|same:password',
+            'id_proof_1' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'id_proof_2' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                'message' => $validator->errors()
+            ], 400);
         }
 
-        return response([
-            'message' => 'Some Thing Went Wrong'
-        ], 404);
-        
+        try {
+            DB::beginTransaction();
+
+            $imageName = null;
+            if ($request->hasFile('profile_picture')) {
+                $imageName = date('Ymd') . '_' . time() . '.' . $request->file('profile_picture')->getClientOriginalExtension();
+                $request->file('profile_picture')->move(public_path('uploads/'), $imageName);
+            }
+
+            $idProof1Name = null;
+            $idProof2Name = null;
+            if ($request->hasFile('id_proof_1')) {
+                $idProof1Name = date('Ymd') . '_' . time() . '.' . $request->file('id_proof_1')->getClientOriginalExtension();
+                $request->file('id_proof_1')->move(public_path('uploads/idproof/'), $idProof1Name);
+            }
+
+            if ($request->hasFile('id_proof_2')) {
+                $idProof2Name = date('Ymd') . '_' . time() . '.' . $request->file('id_proof_2')->getClientOriginalExtension();
+                $request->file('id_proof_2')->move(public_path('uploads/idproof/'), $idProof2Name);
+            }
+
+            $provider = User::create([
+                'first_name' => $fields['first_name'],
+                'last_name' => $fields['last_name'],
+                'name' => $fields['first_name'] . ' ' . $fields['last_name'],
+                'phone' => $fields['phone'],
+                'email' => $fields['email'],
+                'dob' => $fields['dob'],
+                'bio' => $fields['bio'],
+                'password' => Hash::make($fields['password']),
+                'state_id' => User::STATE_INACTIVE,
+                'role' => User::ROLE_SERVICE_PROVIDER,
+                'id_proof_1' => isset($idProof1Name) ? $idProof1Name : null,
+                'id_proof_2' => isset($idProof2Name) ? $idProof2Name : null,
+                'image' => $imageName,
+            ]);
+
+            $token = $provider->createToken('authToken')->plainTextToken;
+            $provider->update(['access_token' => $token]);
+
+            DB::commit();
+            return response([
+                'message' => 'Provider Registered Successfully',
+                'provider' => $provider,
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response([
+                'message' => 'Something went wrong during provider registration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
+
 
     /**
      *
@@ -133,8 +254,8 @@ class AuthController extends Controller
      *           mediaType="multipart/form-data",
      *           @OA\Schema(
      *              required={"email","password","device_token","device_name","device_type"},
-     *              @OA\Property(property="password", type="string", format="password", example="admin@123"),
-     *              @OA\Property(property="email", type="email", format="email", example="rohit@gmail.in"),
+     *              @OA\Property(property="password", type="string", format="password", example="password2"),
+     *              @OA\Property(property="email", type="email", format="email", example="user1@mail.com"),
      *              @OA\Property(property="device_token", type="string", format="string", example="DVtoken"),
      *              @OA\Property(property="device_name", type="string", format="string", example="DVname"),
      *              @OA\Property(property="device_type", type="integer", format="string", example="1")
@@ -174,20 +295,20 @@ class AuthController extends Controller
             'device_name' => 'required|string',
             'device_type' => 'required|integer',
         ]);
-        
+
         if ($validator->fails()) {
 
             return response([
                 'message' => $validator->errors()
             ], 422);
         }
-        
-        
+
+
 
         $user = User::where('email', $fields['email'])->first();
-        
-        if(!empty($user)) {
-            if($user->state_id == User::STATE_INACTIVE) {
+
+        if (!empty($user)) {
+            if ($user->state_id == User::STATE_INACTIVE) {
                 return response([
                     'message' => 'You are currently inactive'
                 ], 400);
@@ -205,10 +326,9 @@ class AuthController extends Controller
         $response = [
             'details' => $user,
             'token' => $token
-        ];  
+        ];
 
-        if($user)
-        {
+        if ($user) {
             // Device Details Add on Login
             $deviceDetails = [
                 'device_token' => $fields['device_token'],
@@ -218,7 +338,7 @@ class AuthController extends Controller
                 'type_id' => $fields['device_type'],
                 'created_by_id' => $user->id
             ];
-            
+
             $device = DeviceDetail::create($deviceDetails);
             return response([
                 'message' => 'Logged In Successfully',
@@ -228,142 +348,63 @@ class AuthController extends Controller
         }
         return response($response, 200);
     }
-    
-     
-    
+
+
+
     /**
      * @OA\Get(
-     *      path="/user/check",
-     *      operationId="userCheck",
-     *      tags={"users"},
-     *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="User Data!"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="data Not Found!"),
-     *        )
-     * ),
-     * )
-     */
-    
-    
-    public function userCheck(Request $request)
-    {
-        
-        $DeviceDetail = DeviceDetail::where('access_token', $request->bearerToken())->first();
-        if($DeviceDetail && $request->bearerToken()){
-            $user = User::find($DeviceDetail->created_by_id);
-
-            if($user){
-                return response(['details' => $user], 200);
-            } else {
-                return response()->json([
-                    'message' => 'User Not Found'
-                ], 404);
-            }    
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated.'
-            ], 403);
-        }
-
- 
-    }
-
-    /**
-     *
-     * @OA\post(
-     * path="/user/verify_otp",
-     * summary="user otp verification",
-     * description="user verify",
-     * operationId="user_verify_otp",
-     * tags={"users"},
-     * security={{ "basicAuth": {} }},
-     *      @OA\RequestBody(
-     *       @OA\MediaType(
-     *           mediaType="multipart/form-data",
-     *           @OA\Schema(
-     *              required={"otp","phone","country_code"},
-     *              @OA\Property(property="otp", type="integer", format="number", example="1234"),
-     *              @OA\Property(property="phone", type="string", format="number", example="34534534535",description="conatct number"),
-     *              @OA\Property(property="country_code", type="integer", format="number", example="91",description="country code"),
-     *           ),
-     *       ),
-     *   ),
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Otp verified"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
+     *     path="/user/check",
+     *     operationId="userCheck",
+     *     tags={"users"},
+     *     summary="Check if the user is authenticated",
+     *     security={{ "sanctum": {} }},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="User Data!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="Data not found!")
+     *         )
      *     )
      * )
      */
-    public function verifyOtp(Request $request)
+    public function userCheck(Request $request)
     {
-        if (! ($request->has('phone'))) {
-            return response([
-                "status" => 422,
-                'message' => 'phone number is required'
-            ]);
-        }
-        if (! $request->has('otp')) {
-            return response([
-                "status" => 422,
-                'message' => 'otp is required'
-            ]);
-        }
+        $token = $request->bearerToken();
 
-        $user = User::where('phone', $request->phone)->first();
+        if ($token) {
+            $user = User::where('access_token', $token)->first();
 
-        if ($user) {
-            if ($user->otp == $request->otp) {
-                $user->otp_verified = 1;
-                $user->save();
-
-                $accessToken = $user->createToken('access_token')->plainTextToken;
-
-                return response()->json([
-                    'details' => $user,
-                    'token' => $accessToken
-                ], 200);
+            if ($user) {
+                return response(['details' => $user], 200);
             } else {
                 return response()->json([
-                    'message' => 'The code your provided is wrong.'
-                ], 401);
+                    'message' => 'Invalid token or user not found.'
+                ], 404);
             }
         } else {
             return response()->json([
-                'message' => 'No such account found .'
-            ], 401);
+                'message' => 'Unauthenticated. Token not found.'
+            ], 403);
         }
     }
+
+
+
+
 
     /**
      *
@@ -407,139 +448,32 @@ class AuthController extends Controller
             $request->validate([
                 'email' => 'required|email'
             ]);
-            $user = User::where('email' ,$request->email)->first();
+            $user = User::where('email', $request->email)->first();
 
-            if(empty($user)){
+            if (empty($user)) {
                 return response([
                     'message' => 'User does not exists!',
-                    
+
                 ], 400);
             }
 
-            if($user->getResetUrl()){
+            if ($user->getResetUrl()) {
                 // send resetpasswordlink
                 //   $res = Mail::to($request->email)->send(new sendPasswordResetLink($user->password_reset_token));
 
                 return response([
                     'message' => 'Mail has been sent to you with reset link. Please check your mail.'
-                    
-                ], 200);
 
+                ], 200);
             } else {
                 return response([
                     'message' => 'Something went wrong'
-                    
+
                 ], 401);
             }
-            
-          
         }
     }
 
-    /**
-     *
-     * @OA\Post(
-     * path="/user/resend_otp",
-     * summary="user resend otp",
-     * description="user reset otp",
-     * operationId="userReset",
-     * tags={"users"},
-     * security={{ "basicAuth": {} }},
-     * @OA\RequestBody(
-     * required=true,
-     * @OA\JsonContent(
-     * required={"otp"},
-     * @OA\Property(property="email", type="string", format="email", example="user1@mail.com"),
-     * @OA\Property(property="phone_number", type="string", example="123455"),
-     * @OA\Property(property="otp", type="string", example="1234"),
-     *   )
-     * ),
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="Otp is sent successfully!"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     *     )
-     * )
-     */
-    public function resendOtp(Request $request)
-    {
-        if ($request->has('email')) {
-
-            $fields = $request->validate([
-                'email' => 'required|string|email|email:rfc,dns'
-            ]);
-
-            $user = User::where('email', $fields['email'])->first();
-        } else if ($request->has('phone_number')) {
-
-            $fields = $request->validate([
-                'phone_number' => 'required|string'
-            ]);
-
-            $user = User::where('phone_number', $fields['phone_number'])->first();
-        }
-        if ($user) {
-            $user->otp = mt_rand(10000, 99999);
-
-            if ($user->save()) {
-
-                if ($request->has('email')) {
-
-                    $mail_details = [
-                        'subject' => 'Register Application OTP',
-                        'body' => 'Your OTP is : ' . $user->otp
-                    ];
-
-                    try {
-
-                        // Mail::to($request->email)->send(new MailNotify($mail_details));
-                        $responseMessage = 'OTP sent to ' . $user->email;
-                    } catch (\Exception $e) { // Using a generic exception
-                        $responseMessage = $e->getMessage();
-                    }
-
-                    $response = [
-                        'message' => $responseMessage
-                    ];
-                } else if ($request->has('phone_number')) {
-
-                    $message = 'Your OTP is : ' . $user->otp;
-
-                    try {
-
-                        // LaraTwilio::notify($request->phone_number, $message);
-                        $responseMessage = 'OTP sent to ' . $user->phone_number;
-                    } catch (TwilioException $e) {
-
-                        $responseMessage = $e->getMessage();
-                    }
-
-                    $response = [
-                        'message' => $responseMessage
-                    ];
-                }
-            } else {
-
-                return response([
-                    'message' => 'Something Went Wrong'
-                ], 401);
-            }
-            return response($response, 201);
-        }
-        return response([
-            'message' => 'User does not exists!'
-        ], 404);
-    }
 
     /**
      *
@@ -556,19 +490,13 @@ class AuthController extends Controller
      *   mediaType="multipart/form-data",
      *   @OA\Schema(
      *   @OA\Property(description="file to upload",property="profile_picture",type="file"),
-     *   @OA\Property(property="phone_number", type="string", example="123455"),
+     *   @OA\Property(property="phone_number", type="numbrer", example="7018285882"),
      *   @OA\Property(property="first_name", type="string", example="arun"),
      *   @OA\Property(property="last_name", type="string", example="kumar"),
      *   @OA\Property(property="country_code", type="string", example="91"),
      *   @OA\Property(property="country", type="number", example="india"),
-     *   @OA\Property(property="gender", type="number", example="1" ,description=" 1 for male and 2 for female"),
      *   @OA\Property(property="dob", type="string", format="date", example="1988-01-01"),
-     *   @OA\Property(property="address_one", type="string", example="address_one"),
-     *   @OA\Property(property="address_two", type="string", example="address_two"),
-     *   @OA\Property(property="state", type="string", example="state"),
-     *   @OA\Property(property="city", type="string", example="cityName"),
-     *   @OA\Property(property="zip", type="string",  example="zip"),
-     *   required={"profile_picture","dob","phone_number","first_name","last_name","country_code","country","gender"} )),
+     *   required={"profile_picture","dob","first_name","last_name"} )),
      * ),
      * @OA\Response(
      *    response=200,
@@ -587,53 +515,43 @@ class AuthController extends Controller
      *     )
      * )
      */
-    
+
     public function profileUpdate(Request $request)
     {
-        
+
         $user = User::where('id', Auth::user()->id)->first();
         $fields = $request->all();
         $validator = Validator::make($fields, [
-            'gender' => 'required',
             'dob' => 'required|date|before:today',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'country_code' => 'required|string',
+            'phone_number' => 'required|string',
         ]);
-       
-        if ($validator->fails()) 
-        {
+
+        if ($validator->fails()) {
             return response([
                 'message' => $validator->errors()
             ], 400);
         }
 
         $checkPhone = User::where('phone', $request->phone_number)->where('id', '!=', Auth::user()->id)->first();
-        if($checkPhone){
+        if ($checkPhone) {
             return response([
                 'message' => 'The phone number has already been taken',
             ], 400);
         }
 
-        if($request->phone_number == $user->phone){
-            if($request->phone_number == Auth::user()->phone){
-
+        if ($request->phone_number == $user->phone) {
+            if ($request->phone_number == Auth::user()->phone) {
             }
-        } 
+        }
 
-        $user->gender = $request->gender;
         $user->name = $request->first_name . ' ' . $request->last_name;
         $user->dob = $request->dob;
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
-        $user->country_code = $request->country_code;
         $user->phone = $request->phone_number;
-        $user->address = $request->address_one;
-        $user->address_two = $request->address_two;
-        $user->state = $request->state;
-        $user->city = $request->city;
-        $user->zip = $request->zip;
-        
+
         if ($request->hasFile('profile_picture')) {
             $imageName = date('Ymd') . '_' . time() . '.' . $request->file('profile_picture')->getClientOriginalExtension();
             $request->profile_picture->move(public_path('uploads/'), $imageName);
@@ -643,7 +561,7 @@ class AuthController extends Controller
         if ($user->save()) {
 
             $user = User::where('id', Auth::user()->id)->first();
-            $user->is_complete = 1;
+            // $user->is_complete = 1;
             $user->save();
 
             return response()->json([
@@ -715,9 +633,8 @@ class AuthController extends Controller
             ],
             'password_confirmation' => 'required|same:password'
         ]);
-       
-        if ($validator->fails())
-        {
+
+        if ($validator->fails()) {
             return response([
                 'message' => $validator->errors()
             ], 400);
@@ -737,8 +654,8 @@ class AuthController extends Controller
             ], 200);
         }
     }
-        
-    
+
+
     /**
      * @OA\Get(
      * path="/user/logout",
@@ -770,7 +687,7 @@ class AuthController extends Controller
      * ),
      * )
      */
-    
+
     public function logout(Request $request)
     {
 
@@ -781,427 +698,5 @@ class AuthController extends Controller
         DeviceDetail::where('created_by_id', $user_id)->where('device_token', $device_token)->delete();
 
         return response(['message' => 'You have been successfully logged out!'], 200);
-
-    }
-    /**
-     *
-     * @OA\Get(path="/user/page",
-     *   summary="",
-     *   tags={"users"},
-     *   @OA\Parameter(
-     *     name="type",
-     *     in="query",description="
-     *       TYPE_PRIVACY = 1,
-     *       TYPE_TERM_CONDITION = 2,
-     *       TYPE_ABOUT_US = 3,
-     * " ,
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer"
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="page info",
-     *     @OA\MediaType(
-     *         mediaType="application/json",
-     *
-     *     ),
-     *   ),
-     * )
-     */
- 
-    public function page(Request $request)
-    {
-        $model = Page::Where('type_id', $request->type)->first();
-        if ($model) {
-            return response([
-                "title" => $model->title,
-                "description" => $model->description,
-            ], 200);
-        } else {
-            if(Page::TERMS_CONDITION == $request->type){
-                $page = "Terms & Condition";
-            } elseif(Page::PRIVACY_POLICY == $request->type){
-                $page = "Privacy Policy";
-            } else {
-                $page = "About Us";
-            }
-            return response([
-                "message" => "page not Found, info will be available soon",
-            ], 200);
-        }
-    }
-    
-    /**
-     * @OA\Post(
-     *      path="/user/address/add",
-     *      operationId="addAddress",
-     *      tags={"users"},
-     *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     *
-     *   @OA\RequestBody(
-     *
-     *       @OA\MediaType(
-     *           mediaType="multipart/form-data",
-     *           @OA\Schema(
-     *              required={"address","city","state","country","postal_code","longitude","latitude","address_type"},
-     *              @OA\Property(property="address", type="string", example="address"),
-     *              @OA\Property(property="address_two", type="string", example="address_two"),
-     *              @OA\Property(property="city", type="string", example="city"),
-     *              @OA\Property(property="state", type="string", example="state"),
-     *              @OA\Property(property="country", type="string", example="countryName"),
-     *              @OA\Property(property="postal_code", type="integer",  example="112233"),
-     *              @OA\Property(property="longitude", type="string", example="-25.89"),
-     *              @OA\Property(property="latitude", type="string", example="126.79"),
-     *              @OA\Property(property="address_type", type="integer",  example="0 for home 1 for office"),
-     *           ),
-     *       ),
-     *   ),
-     *
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="Address Added successfully!"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *    )
-     *  ),
-     * )
-     */
-    
-    public function addAddress(Request $request) 
-    {
-        
-        $addressType = [0,1];
-        
-        $validator = validator($request->all(), [
-            'address' => 'required',
-            'city' => 'required',
-            'address_two' => 'nullable',
-            'state' => 'required',
-            'country' => 'required',
-            'postal_code' => 'required|integer',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'address_type' => 'required|integer',
-        ]);
-        
-        if ($validator->fails()) {
-            
-            return response([
-                "status" => 422,
-                'message' => $validator->errors()
-            ]);
-        }
-        
-        
-        if (!in_array($request->address_type, $addressType)) {
-            
-            return response([
-                "status" => 422,
-                'message' => 'Address type not found'
-            ]);
-        }
-
-
-        $address = new Address();
-        $address->user_id = Auth::user()->id;
-        $address->address = $request->address;
-        $address->address_two = $request->address_two;
-        $address->city = $request->city;
-        $address->state = $request->state;
-        $address->country = $request->country;
-        $address->postal_code = $request->postal_code;
-        $address->latitude = $request->latitude;
-        $address->longitude = $request->longitude;
-        $address->address_type = $request->address_type;
-        $address->save();
-        
-        if($address->save()) {
-            return response([
-                'message' => 'Success, Your address has been added',
-                'detail'=>$address
-            ], 200);
-        } else {
-            return response([
-                'message' => 'unexpected error occurred'
-            ], 404);
-        }
-    }
-    
-    /**
-     *
-     * @OA\Get(
-     *      path="/user/address-list",
-     *      operationId="AddressList",
-     *      tags={"users"},
-     *      summary="",
-     * security={{ "sanctum": {} }},
-     * @OA\Response(
-     *    response=200,
-     *    description="Service object",
-     *           @OA\JsonContent(
-     *           @OA\Property(property="id", type="integer", example="1"),
-     *           @OA\Property(property="user_id", type="integer", example="1"),
-     *           @OA\Property(property="address", type="string", example="address"),
-     *           @OA\Property(property="address_two", type="string", example="address two"),
-     *           @OA\Property(property="city", type="string", example="city"),
-     *           @OA\Property(property="state", type="string", example="state"),
-     *           @OA\Property(property="country", type="string", example="country"),
-     *           @OA\Property(property="postal_code", type="string", example="115577"),
-     *           @OA\Property(property="latitude", type="string", example="-124.56"),
-     *           @OA\Property(property="longitude", type="string", example="25.89"),
-     *     )
-     * ),
-     *
-     * @OA\Response(
-     *    response=400,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     *     )
-     */
-    
-    public function addressDetail(Request $request) {
-        
-        $currentUser = Auth::user()->id;
-        
-        if(!empty($currentUser)) {
-            
-            $getAddress = Address::where('user_id',$currentUser)->get();
-            
-            return response([
-                'message' => 'Address List',
-                'list'=>$getAddress
-            ], 200);
-            
-        }
-    }
-    
-    
-    /**
-     *
-     * @OA\Get(
-     *      path="/user/address/delete",
-     *      operationId="AddressDelete",
-     *      tags={"users"},
-     *      summary="",
-     *      @OA\Parameter(
-     *          name="address_id",
-     *          description="address id",
-     *          required=true,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     * security={{ "sanctum": {} }},
-     * @OA\Response(
-     *    response=200,
-     *    description="Service object",
-     *           @OA\JsonContent(
-     *           @OA\Property(property="message", type="string", example="Address Deleted Successfully"),
-     *
-     *     )
-     * ),
-     *
-     * @OA\Response(
-     *    response=400,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     *     )
-     */
-    
-    public function addressDelete(Request $request) {
-        $address = Address::query();
-        
-        $addressId = $request->address_id;
-        
-        $user = Auth::user()->id;
-        
-        if(empty($user)) {
-            return response([
-                'message' => 'Login to delete address'
-            ], 404);
-        }
-        
-        
-        
-        if(!empty($addressId)) {
-            $getAddress = $address->where([
-                ['id','=',$addressId],
-                ['user_id','=',$user],
-            ])->first();
-            
-            if(!empty($getAddress)) {
-                $getAddress->delete();
-                
-                return response([
-                    'message' => 'Address deleted successfully',
-                ], 200);
-            } else {
-                return response([
-                    'message' => 'Something went wrong'
-                ], 404);
-            }
-        } else {
-            return response([
-                'message' => 'Something went wrong'
-            ], 404);
-        }
-    }
-    
-    /**
-     * @OA\Post(
-     *      path="/user/address/update",
-     *      operationId="updateAddress",
-     *      tags={"users"},
-     *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     *
-     *   @OA\RequestBody(
-     *
-     *       @OA\MediaType(
-     *           mediaType="multipart/form-data",
-     *           @OA\Schema(
-     *              required={"address_id","address","city","state","country","postal_code","longitude","latitude","address_type"},
-     *              @OA\Property(property="address_id", type="integer", example="1"),
-     *              @OA\Property(property="address", type="string", example="address"),
-     *              @OA\Property(property="address_two", type="string", example="address_two"),
-     *              @OA\Property(property="city", type="string", example="city"),
-     *              @OA\Property(property="state", type="string", example="state"),
-     *              @OA\Property(property="country", type="string", example="countryName"),
-     *              @OA\Property(property="postal_code", type="integer",  example="112233"),
-     *              @OA\Property(property="longitude", type="string", example="-25.89"),
-     *              @OA\Property(property="latitude", type="string", example="126.79"),
-     *              @OA\Property(property="address_type", type="integer",  example="0 for home 1 for office"),
-     *           ),
-     *       ),
-     *   ),
-     *
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="Address Updated successfully!"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="integer", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *    )
-     *  ),
-     * )
-     */
-    
-    public function addressUpdate(Request $request) {
-        $address = Address::query();
-        
-        $addressType = [0,1];
-        
-        $currentUser = Auth::user()->id;
-        
-        $validator = validator($request->all(), [
-            'address_id' => 'required|integer',
-            'address' => 'required',
-            'city' => 'required',
-            'address_two' => 'nullable',
-            'state' => 'required',
-            'country' => 'required',
-            'postal_code' => 'required|integer',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'address_type' => 'required|integer',
-        ]);
-        
-        if ($validator->fails()) {
-            
-            return response([
-                "status" => 422,
-                'message' => $validator->errors()
-            ]);
-        }
-        
-        $addressId = $request->address_id;
-        
-        if (!in_array($request->address_type, $addressType)) {
-            
-            return response([
-                "status" => 422,
-                'message' => 'Address type not found'
-            ]);
-        }
-        
-        $addressUpdate = $address->where([
-            ['id','=',$addressId],
-            ['user_id','=',$currentUser],
-        ])->limit(1)->update([
-            'address'      => $request->address,
-            'address_two'  => $request->address_two,
-            'city'         => $request->city,
-            'state'        => $request->state,
-            'country'      => $request->country,
-            'postal_code'  => $request->postal_code,
-            'latitude'     => $request->latitude,
-            'longitude'    => $request->longitude,
-            'address_type' => $request->address_type
-        ]);
-        
-        if($addressUpdate) {
-            return response([
-                'message' => 'Address Updated Successfully',
-            ], 200);
-        } else {
-            return response([
-                'message' => 'Something went wrong'
-            ], 404);
-        }
     }
 }
