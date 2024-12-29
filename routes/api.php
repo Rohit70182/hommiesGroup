@@ -80,23 +80,6 @@ Route::prefix('user')->group(function () {
         \App\Http\Controllers\API\AuthController::class,
         'login'
     ]);
-
-    Route::post('/verify_otp', [
-        \App\Http\Controllers\API\AuthController::class,
-        'verifyOtp'
-    ]);
-    Route::post('/resend_otp', [
-        \App\Http\Controllers\API\AuthController::class,
-        'resendOtp'
-    ]);
-    Route::post('/password/forgot', [
-        \App\Http\Controllers\API\AuthController::class,
-        'sendPasswordResetLink'
-    ])->middleware('throttle:5,1');
-    Route::post('/password/verify_otp', [
-        \App\Http\Controllers\API\AuthController::class,
-        'verifyForgotPasswordOtp'
-    ]);
 });
 
 Route::prefix('property')->group(function () {
@@ -147,17 +130,16 @@ Route::prefix('amanity')->group(function () {
     ]);
 });
 
-
 Route::prefix('chats')->group(function () {
     Route::group([
         'middleware' => [
             'auth:sanctum'
         ]
     ], function () {
-        // Route::post('/send-message', [
-        //     \App\Http\Controllers\API\ChatsController::class,
-        //     'sendMessage'
-        // ]);
+        Route::post('/send-message', [
+            \App\Http\Controllers\API\ChatsController::class,
+            'sendMessage'
+        ]);
         Route::get('/load-chat', [
             \App\Http\Controllers\API\ChatsController::class,
             'loadChat'
@@ -166,24 +148,9 @@ Route::prefix('chats')->group(function () {
             \App\Http\Controllers\API\ChatsController::class,
             'chatList'
         ]);
-        Route::get('/delete-message', [
+        Route::get('/load-new-messages', [
             \App\Http\Controllers\API\ChatsController::class,
-            'deleteMessage'
-        ]);
-        Route::get('/delete-chat', [
-            \App\Http\Controllers\API\ChatsController::class,
-            'deleteChat'
+            'loadNewMessages'
         ]);
     });
-});
-
-Route::prefix('chats')->group(function () {
-    Route::post('/send-message', [
-        \App\Http\Controllers\API\ChatsController::class,
-        'sendMessage'
-    ]);
-    Route::get('/users-list', [
-        \App\Http\Controllers\API\ChatsController::class,
-        'usersList'
-    ]);
 });

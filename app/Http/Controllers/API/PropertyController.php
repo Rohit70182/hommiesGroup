@@ -392,7 +392,7 @@ class PropertyController extends Controller
             }
 
             DB::commit();
-            $property->load('propertyAmenities', 'images');
+            // $property->load('propertyAmenities', 'images');
             return response()->json(['message' => 'Property created successfully.', 'property' => $property], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -491,7 +491,7 @@ class PropertyController extends Controller
                 'property_images_url' => $property->property_images_url,
                 'property_amanities_image' => $property->property_amanities_image,
                 'property_amenities' => $property->propertyAmenities,
-                'images' => $property->images,
+                // 'images' => $property->images,
                 'user' => $property->user,
             ];
 
@@ -679,7 +679,7 @@ class PropertyController extends Controller
             }
 
             DB::commit();
-            $property->load('propertyAmenities', 'images');
+            // $property->load('propertyAmenities', 'images');
             return response()->json(['message' => 'Property updated successfully.', 'property' => $property], 200);
         } catch (\Exception $e) {
             DB::rollBack();

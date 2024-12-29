@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -20,7 +21,7 @@ class ChatsController extends Controller
      *      operationId="sendMessage",
      *      tags={"chats"},
      *      security={{ "sanctum": {} }},
-     *      summary="",
+     *      summary="chat with service provider and user",
      *
      *   @OA\RequestBody(
      *
@@ -30,7 +31,6 @@ class ChatsController extends Controller
      *              required={"to_id"},
      *              @OA\Property(property="to_id", type="string", format="number", example="1"),
      *              @OA\Property(property="message", type="string", format="text", example="message here"),
-     *              @OA\Property(description="Add files to upload", property="image",type="array", @OA\Items(type="file",format="binary")),
      *           ),
      *       ),
      *   ),
@@ -64,33 +64,32 @@ class ChatsController extends Controller
      *  ),
      * )
      */
-    
+
     public function sendMessage(Request $request)
     {
+        $fromId = auth()->id();
         $validator = validator($request->all(), [
             'to_id' => 'required|numeric',
             'message' => 'required_without:image',
-            'image' => 'required_without:message|mimes:jpeg,jpg,png|nullable'
+            // 'image' => 'required_without:message|mimes:jpeg,jpg,png|nullable'
         ]);
-        
+
         if ($validator->fails()) {
             return response([
                 "status" => 422,
                 'message' => $validator->errors()
             ]);
         }
-        
-        if(!empty($request->message) && empty($request->image)) {
+
+        if (!empty($request->message) && empty($request->image)) {
             $messageType = Chat::ONLY_MESSAGE;
-        } else if(empty($request->message) && !empty($request->image)) {
+        } else if (empty($request->message) && !empty($request->image)) {
             $messageType = Chat::ONLY_IMAGE;
-        } else if(!empty($request->message) && !empty($request->image)) {
+        } else if (!empty($request->message) && !empty($request->image)) {
             $messageType = Chat::IMAGE_AND_MESSAGE;
         }
-        
-       
-        
-        if(!empty($request->image)) {
+
+        if (!empty($request->image)) {
             $validator = validator($request->all(), [
                 'image' => 'mimes:jpeg,png,jpg|max:2048'
             ]);
@@ -102,15 +101,15 @@ class ChatsController extends Controller
             }
         }
         $chat = new Chat();
-        $chat->from_id =2;
+        $chat->from_id = $fromId;
         $chat->to_id = $request->to_id;
         $chat->message = $request->message;
-        $chat->readers =2 . ',' . $chat->to_id;
+        $chat->readers = $fromId . ',' . $chat->to_id;
         $chat->type_id = Chat::USER_MESSAGE;
+        $chat->is_read = Chat::READ_NO;
         $chat->message_type = $messageType;
-        
-        if ($request->hasfile('image'))
-        {
+
+        if ($request->hasfile('image')) {
             $file = $request->file('image');
             $extenstion = $file->getClientOriginalExtension();
             $filename = time() . '.' . $extenstion;
@@ -131,86 +130,97 @@ class ChatsController extends Controller
     }
 
     /**
-     *
      * @OA\Get(
      *      path="/chats/load-chat",
      *      operationId="loadChat",
      *      tags={"chats"},
      *      security={{ "sanctum": {} }},
-     *      summary="",
+     *      summary="Load chat messages with read status update",
      *
      *     @OA\Parameter(
-     *     name="user_id",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer"
+     *         name="user_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(
+     *           type="integer"
+     *         ),
      *     ),
-     *   ),
      *
      * @OA\Response(
      *    response=200,
      *    description="Success",
      *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Details fetched"),
-     *        )
+     *        @OA\Property(property="message", type="string", example="Chats loaded successfully"),
+     *        @OA\Property(property="list", type="array", @OA\Items())
+     *    )
      * ),
      * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
+     *    response=422,
+     *    description="Validation Error",
      *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Authentication error"),
-     *        )
+     *        @OA\Property(property="message", type="string", example="Validation error")
+     *    )
      * ),
      * @OA\Response(
-     *    response=404,
+     *    response=400,
      *    description="Not Found",
      *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Not found error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
+     *        @OA\Property(property="message", type="string", example="No chats found")
      *    )
-     *  ),
+     * )
      * )
      */
     public function loadChat(Request $request)
     {
-        $chat = Chat::query();
-        
+        $authUserId = Auth::id();
+
         $validator = validator($request->all(), [
             'user_id' => 'required|integer'
         ]);
-        
-        if ($validator->fails()) {
 
+        if ($validator->fails()) {
             return response([
                 "status" => 422,
                 'message' => $validator->errors()
-            ]);
+            ], 422);
         }
-        if (! empty($request->user_id))
 
-            $chat = $chat->where('from_id', $request->user_id)
-                ->orwhere('to_id', $request->user_id)
-                ->with('fromId','toId')
-                ->orderBy('id','DESC')
-                ->get();
-        if ($chat) {
+        $userId = $request->input('user_id');
+
+        $chat = Chat::where(function ($query) use ($userId, $authUserId) {
+            $query->where('from_id', $userId)->where('to_id', $authUserId);
+        })
+            ->orWhere(function ($query) use ($userId, $authUserId) {
+                $query->where('from_id', $authUserId)->where('to_id', $userId);
+            })
+            ->with('fromId', 'toId')
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        if ($chat->isEmpty()) {
             return response([
-                'list' => $chat,
-                'message' => 'chats list'
-            ], 200);
-        } else {
-            return response([
-                'message' => 'Not found'
+                'message' => 'No chats found'
             ], 400);
         }
+
+        Chat::where('from_id', $userId)
+            ->where('to_id', $authUserId)
+            ->where('is_read', Chat::READ_NO)
+            ->where(function ($query) use ($authUserId) {
+                $query->whereNull('readers')
+                    ->orWhereRaw('NOT FIND_IN_SET(?, readers)', [$authUserId]);
+            })
+            ->update([
+                'is_read' => Chat::READ_YES,
+                'readers' => DB::raw("IFNULL(CONCAT_WS(',', readers, $authUserId), $authUserId)")
+            ]);
+
+        return response([
+            'list' => $chat,
+            'message' => 'Chats loaded successfully'
+        ], 200);
     }
+
 
     /**
      *
@@ -264,258 +274,126 @@ class ChatsController extends Controller
         $chats = Chat::query();
 
         $chats = $chats->where('from_id', Auth::id())
-        ->orWhere('to_id', Auth::id())->get();
-         
+            ->orWhere('to_id', Auth::id())->get();
+
         $ids = [];
         foreach ($chats as $chat) {
-        
-            if ($chat->from_id != Auth::id()  ) {
+
+            if ($chat->from_id != Auth::id()) {
                 array_push($ids, $chat->from_id);
             }
-            if ($chat->to_id != Auth::id()  ) {
+            if ($chat->to_id != Auth::id()) {
                 array_push($ids, $chat->to_id);
             }
         }
         $ids = array_unique($ids);
-        
-        foreach ($ids as $user)
-        {
-            $users[] = User::where('id',$user)->get();
+
+        foreach ($ids as $user) {
+            $users[] = User::where('id', $user)->get();
         }
-        
-        if ($chat) 
-        {
+
+        if ($chat) {
             return response([
                 'list' => $users,
                 'message' => 'chats list'
             ], 200);
-        } 
-        else 
-        {
+        } else {
             return response([
                 'message' => 'Not found'
             ], 400);
         }
     }
-    
-    /**
-     *
-     * @OA\Get(
-     *      path="/chats/users-list",
-     *      operationId="usersList",
-     *      tags={"chats"},
-     *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Chat list fetched"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Authentication error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="status", type="string", example="Not found error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *    )
-     *  ),
-     * )
-     */
-    
-    public function usersList(Request $request) {
-        $userlist = User::all();
-        
-        
-        if(!empty($userlist)) {
-            return response([
-                'list' => $userlist,
-                'message' => 'chats list'
-            ], 200);
-        } else {
-            return response([
-                'message' => 'Something went wrong'
-            ], 400);
-        }
-    }
 
     /**
-     *
      * @OA\Get(
-     *      path="/chats/delete-message",
-     *      operationId="deleteMessage",
+     *      path="/chats/load-new-messages",
+     *      operationId="loadNewMessages",
      *      tags={"chats"},
      *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     *     @OA\Parameter(
-     *     name="message_id",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer"
-     *     ),
-     *   ),
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Message deleted successfully"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Not Found Error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *    )
-     *  ),
+     *      summary="Check for new messages for the authenticated user",
+     *      @OA\Parameter(
+     *          name="user_id",
+     *          in="query",
+     *          required=true,
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="status", type="string", example="success"),
+     *              @OA\Property(property="new_messages", type="array", @OA\Items(
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="from_id", type="integer", example=2),
+     *                  @OA\Property(property="to_id", type="integer", example=1),
+     *                  @OA\Property(property="message", type="string", example="Hello!"),
+     *                  @OA\Property(property="created_at", type="string", format="date-time")
+     *              )),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Authentication error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Validation Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Validation failed"),
+     *          )
+     *      ),
      * )
      */
-    public function deleteMessage(Request $request)
-    { 
-        $message = Chat::query();
-        $messageId = $request->message_id;
-        
-        if(!empty($messageId)) 
-        {
-          $getMessage = $message->where('id', $messageId)->first();
-            
-          if(!empty($getMessage)) 
-            {
-                $getMessage->delete();
-                return response([
-                    'message' => 'Message deleted successfully',
-                    'list' => $messageId
-                ], 200);
-            } 
-            else 
-            {
-                return response([
-                    'message' => 'Message id does not exist'
-                ], 404);
-            }
-        } 
-        else 
-        {
-            return response([
-                'message' => 'Empty message id'
-            ], 404);
-        }
-
-    }
-    
-    
-
-    /**
-     *
-     * @OA\Get(
-     *      path="/chats/delete-chat",
-     *      operationId="deleteChat",
-     *      tags={"chats"},
-     *      security={{ "sanctum": {} }},
-     *      summary="",
-     *
-     *     @OA\Parameter(
-     *     name="user_id",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer"
-     *     ),
-     *   ),
-     *
-     * @OA\Response(
-     *    response=200,
-     *    description="Success",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Details fetched"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=401,
-     *    description="Unauthenticated",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Authentication error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=404,
-     *    description="Not Found",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Not found error"),
-     *        )
-     * ),
-     * @OA\Response(
-     *    response=403,
-     *    description="Forbidden",
-     *    @OA\JsonContent(
-     *    @OA\Property(property="message", type="string", example="Something went wrong"),
-     *    )
-     *  ),
-     * )
-     */
-    public function deleteChat(Request $request)
+    public function loadNewMessages(Request $request)
     {
-        $chat = Chat::query();
+        $authUserId = Auth::id();
+
         $validator = validator($request->all(), [
             'user_id' => 'required|integer'
         ]);
-        if ($validator->fails()) 
-        {
-            return response([
-                "status" => 422,
-                'message' => $validator->errors()
-            ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "status" => "error",
+                "message" => $validator->errors()
+            ], 422);
         }
-        if (! empty($request->user_id))
-        {
-            $chat = $chat->where('from_id', $request->user_id)
-                         ->orwhere('to_id', $request->user_id)
-                         ->get();
-           foreach ($chat as $chats) 
-           {
-               $chats->delete();
-           }
-                return response([
-                    'list' => $chat,
-                    'message' => 'Chat deleted successfully'
-                ], 200);
+
+        $userId = $request->input('user_id');
+
+        $newMessages = Chat::where('from_id', $userId)
+            ->where('to_id', $authUserId)
+            ->where('is_read', Chat::READ_NO)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        if ($newMessages->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No new messages found',
+                'new_messages' => []
+            ], 200);
         }
-        else 
-         {
-             return response([
-              'message' => 'Not found'
-             ], 400);
-         }
+
+        foreach ($newMessages as $message) {
+            $readers = $message->readers ? explode(',', $message->readers) : [];
+            if (!in_array($authUserId, $readers)) {
+                $readers[] = $authUserId;
+            }
+
+            $message->readers = implode(',', $readers);
+            $message->is_read = Chat::READ_YES;
+            $message->save(['is_read', 'readers']);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'New messages found',
+            'new_messages' => $newMessages
+        ], 200);
     }
 }

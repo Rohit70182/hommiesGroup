@@ -285,7 +285,6 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $fields = $request->all();
-
         $validator = Validator::make($fields, [
             'email' => 'required',
             'password' => 'required|string',
@@ -300,8 +299,6 @@ class AuthController extends Controller
                 'message' => $validator->errors()
             ], 422);
         }
-
-
 
         $user = User::where('email', $fields['email'])->first();
 
@@ -346,8 +343,6 @@ class AuthController extends Controller
         }
         return response($response, 200);
     }
-
-
 
     /**
      * @OA\Get(

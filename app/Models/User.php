@@ -47,7 +47,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    public $appends = ['unread_count', 'image_url', 'id_proof_1_url', 'id_proof_2_url'];
+    public $appends = ['unread_count', 'image_url', 'id_proof_1_url', 'id_proof_2_url', 'last_message', 'last_message_time'];
 
     protected $fillable = [
         'name',
@@ -220,6 +220,37 @@ class User extends Authenticatable
         }
         return  self::STATE_INACTIVE;
     }
+
+    public function getLastMessageAttribute()
+    {
+        $lastMessage = Chat::where('from_id', $this->id)
+            ->where('to_id', Auth::id())
+            ->orWhere(function ($query) {
+                $query->where('from_id', Auth::id())
+                    ->where('to_id', $this->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+        return $lastMessage ? $lastMessage->message : null;
+    }
+    /**
+     * Get the last message time between this user and the authenticated user.
+     *
+     * @return string|null
+     */
+    public function getLastMessageTimeAttribute()
+    {
+        $lastMessage = Chat::where('from_id', $this->id)
+            ->where('to_id', Auth::id())
+            ->orWhere(function ($query) {
+                $query->where('from_id', Auth::id())
+                    ->where('to_id', $this->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+        return $lastMessage ? $lastMessage->created_at->format('Y-m-d H:i:s') : null;
+    }
+
 
     public function servicePrice()
     {
