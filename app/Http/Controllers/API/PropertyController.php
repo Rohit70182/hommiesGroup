@@ -21,6 +21,26 @@ class PropertyController extends Controller
      *      operationId="properties",
      *      tags={"property"},
      *      security={{ "sanctum": {} }},
+     *      @OA\Parameter(
+     *          name="search",
+     *          in="query",
+     *          required=false,
+     *          description="Search properties by title or description",
+     *          @OA\Schema(
+     *              type="string",
+     *              example="Property One"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          required=false,
+     *          description="Page number for pagination (default is 1)",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Property List",
@@ -38,18 +58,56 @@ class PropertyController extends Controller
      *      ),
      * )
      */
-    public function List()
+    public function List(Request $request)
     {
-        $properties = Property::all();
+        if (!auth()->check()) {
+            return response()->json(['message' => 'User is not authenticated.'], 401);
+        }
+
+        $page = $request->get('page', 1);
+        $search = $request->get('search', '');
+        $propertiesQuery = Property::query();
+        if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
+            $propertiesQuery->where('created_by_id', auth()->id());
+        }
+
+        if (!empty($search)) {
+            $propertiesQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('about', 'like', '%' . $search . '%')
+                    ->orWhere('town', 'like', '%' . $search . '%')
+                    ->orWhere('country', 'like', '%' . $search . '%')
+                    ->orWhere('zipcode', 'like', '%' . $search . '%');
+            });
+        }
+
+        $properties = $propertiesQuery->paginate(10, ['*'], 'page', $page);
+        $totalProperties = $properties->total();
+
+        $properties->getCollection()->each(function ($property) {
+            $item = Item::where([
+                'model_type' => get_class($property),
+                'model_id' => $property->id,
+                'created_by_id' => auth()->id(),
+                'state_id' => Item::STATE_ACTIVE,
+            ])->first();
+            $property->is_favorite = $item ? true : false;
+        });
+
         if ($properties->isNotEmpty()) {
             return response()->json([
-                'list' => $properties,
+                'property' => $properties->items(),
+                'total_count' => $totalProperties,
+                'current_page' => $properties->currentPage(),
+                'total_pages' => $properties->lastPage(),
                 'message' => 'Property list fetched successfully.'
             ], 200);
         } else {
             return response()->json(['message' => 'No properties found.'], 404);
         }
     }
+
+
 
     /**
      * @OA\Post(
@@ -76,11 +134,14 @@ class PropertyController extends Controller
      *                  @OA\Property(property="about", type="string", example="A cozy place for vacation."),
      *                  @OA\Property(property="price", type="number", format="float", example=150.75),
      *                  @OA\Property(property="price_type", type="integer", example=1),
+     *                  @OA\Property(property="town", type="string", example= "canada"),
+     *                  @OA\Property(property="zipcode", type="integer", example=178526),
+     *                  @OA\Property(property="country", type="string", example="Canada"),
      *                  @OA\Property(property="address", type="string", example="123 Main St, Springfield"),
      *                  @OA\Property(property="latitude", type="number", format="float", example=40.7128),
      *                  @OA\Property(property="longitude", type="number", format="float", example=-74.0060),
      *                  @OA\Property(property="bathrooms", type="integer", example=2),
-     *                  @OA\Property(property="property_type", type="string", example="1,0,2"),
+     *                  @OA\Property(property="property_type", type="string", example="1"),
      *                  @OA\Property(property="adult", type="integer", example=2),
      *                  @OA\Property(property="children", type="integer", example=1),
      *                  @OA\Property(property="infants", type="integer", example=1),
@@ -131,6 +192,9 @@ class PropertyController extends Controller
             'adult' => 'required|integer',
             'children' => 'required|integer',
             'infants' => 'required|integer',
+            'town' => 'required|string',
+            'zipcode' => 'required|integer',
+            'country' => 'required|string',
             // 'amenities_ids' => 'required|array',
             // 'amenities_ids.*' => 'integer|exists:amenities,id',
             // 'images' => 'required|array',
@@ -173,6 +237,9 @@ class PropertyController extends Controller
                 'adult' => $request->adult,
                 'children' => $request->children,
                 'infants' => $request->infants,
+                'town' => $request->town,
+                'zipcode' => $request->zipcode,
+                'country' => $request->country,
                 'property_id_proof_1' => $idProof1Name,
                 'property_id_proof_2' => $idProof2Name,
                 'created_by_id' => auth()->id(),
@@ -237,7 +304,7 @@ class PropertyController extends Controller
      *              @OA\Property(property="latitude", type="number", format="float", example=40.7128),
      *              @OA\Property(property="longitude", type="number", format="float", example=-74.0060),
      *              @OA\Property(property="bathrooms", type="integer", example=2),
-     *              @OA\Property(property="property_type", type="string", example="1,0,2"),
+     *              @OA\Property(property="property_type", type="string", example="1"),
      *              @OA\Property(property="adult", type="integer", example=2),
      *              @OA\Property(property="children", type="integer", example=1),
      *              @OA\Property(property="infants", type="integer", example=1),
@@ -259,22 +326,21 @@ class PropertyController extends Controller
     public function getPropertyDetail($id)
     {
         try {
-            $property = Property::with(['propertyAmenities.amenity', 'images'])
-                ->find($id);
+            $property = Property::with(['propertyAmenities.amenity', 'images'])->find($id);
 
             if (!$property) {
                 return response()->json(['message' => 'Property not found.'], 404);
             }
 
-            $formattedAmenities = $property->propertyAmenities->map(function ($amenity) {
-                return $amenity->amenity->name ?? 'Unknown Amenity';
-            });
+            $item = Item::where([
+                'model_type' => get_class($property),
+                'model_id' => $property->id,
+                'created_by_id' => auth()->id(),
+                'state_id' => Item::STATE_ACTIVE,
+            ])->first();
 
-            $formattedImages = $property->images->map(function ($image) {
-                return asset('uploads/property/propertyImages/' . $image->image);
-            });
-
-            return response()->json([
+            $isFavorite = $item ? true : false;
+            $formattedProperty = [
                 'id' => $property->id,
                 'name' => $property->name,
                 'no_of_rooms' => $property->no_of_rooms,
@@ -290,15 +356,28 @@ class PropertyController extends Controller
                 'adult' => $property->adult,
                 'children' => $property->children,
                 'infants' => $property->infants,
-                'property_id_proof_1' => asset('uploads/property/propertyIds/' . $property->property_id_proof_1),
-                'property_id_proof_2' => asset('uploads/property/propertyIds/' . $property->property_id_proof_2),
-                'amenities' => $formattedAmenities,
-                'images' => $formattedImages,
+                'town' => $property->town,
+                'zipcode' => $property->zipcode,
+                'country' => $property->country,
+                'is_favorite' => $isFavorite,
+                'property_id_proof_1' => $property->property_id_proof_1_url,
+                'property_id_proof_2' => $property->property_id_proof_2_url,
+                'property_images_url' => $property->property_images_url,
+                'property_amanities_image' => $property->property_amanities_image,
+                'property_amenities' => $property->propertyAmenities,
+                'images' => $property->images
+            ];
+
+            return response()->json([
+                'message' => 'Property details fetched successfully',
+                'property' => $formattedProperty
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error fetching property details.', 'error' => $e->getMessage()], 500);
         }
     }
+
+
 
 
 
@@ -316,16 +395,39 @@ class PropertyController extends Controller
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          @OA\JsonContent(
-     *              @OA\Property(property="name", type="string", example="Updated Property"),
-     *              @OA\Property(property="no_of_rooms", type="integer", example=4)
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(
+     *                  required={"name", "no_of_rooms", "no_of_beds", "price", "price_type", "address", "latitude", "longitude", "bathrooms", "property_type", "adult", "children", "infants"},
+     *                  @OA\Property(property="name", type="string", example="Updated Property"),
+     *                  @OA\Property(property="no_of_rooms", type="integer", example=4),
+     *                  @OA\Property(property="no_of_beds", type="integer", example=3),
+     *                  @OA\Property(property="price", type="number", format="float", example=200.50),
+     *                  @OA\Property(property="price_type", type="integer", example=1),
+     *                  @OA\Property(property="address", type="string", example="456 New Street, City"),
+     *                  @OA\Property(property="latitude", type="number", format="float", example=41.8781),
+     *                  @OA\Property(property="longitude", type="number", format="float", example=-87.6298),
+     *                  @OA\Property(property="bathrooms", type="integer", example=3),
+     *                  @OA\Property(property="property_type", type="string", example="2"),
+     *                  @OA\Property(property="adult", type="integer", example=2),
+     *                  @OA\Property(property="children", type="integer", example=1),
+     *                  @OA\Property(property="infants", type="integer", example=1),
+     *                  @OA\Property(property="town", type="string", example= "canada"),
+     *                  @OA\Property(property="zipcode", type="integer", example=178526),
+     *                  @OA\Property(property="country", type="string", example="Canada"),
+     *                  @OA\Property(property="amenities_ids", type="array", @OA\Items(type="integer"), example={1, 2}),
+     *                  @OA\Property(property="property_id_proof_1", type="file", description="Updated first property ID proof"),
+     *                  @OA\Property(property="property_id_proof_2", type="file", description="Updated second property ID proof"),
+     *                  @OA\Property(property="images[]", type="array", @OA\Items(type="file"), description="New images to upload or update")
+     *              )
      *          )
      *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Property updated successfully.",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="Property updated successfully.")
+     *              @OA\Property(property="message", type="string", example="Property updated successfully."),
+     *              @OA\Property(property="property", type="object", example={"id": 1, "name": "Updated Property", "no_of_rooms": 4, "no_of_beds": 3, "price": 200.50, "address": "456 New Street, City"})
      *          )
      *      ),
      *      @OA\Response(
@@ -334,19 +436,128 @@ class PropertyController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="Property not found.")
      *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Validation error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Validation error.")
+     *          )
      *      )
      * )
      */
     public function updateProperty(Request $request, $id)
     {
-        $property = Property::find($id);
+        $property = Property::where('id', $id)
+            ->where('created_by_id', auth()->id())
+            ->first();
+
         if (!$property) {
             return response()->json(['message' => 'Property not found.'], 404);
         }
+        if (auth()->user()->role != User::ROLE_SERVICE_PROVIDER || auth()->id() != $property->created_by_id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255',
+            'no_of_rooms' => 'nullable|integer',
+            'no_of_beds' => 'nullable|integer',
+            'about' => 'nullable|string',
+            'price' => 'nullable|numeric',
+            'price_type' => 'nullable|integer',
+            'address' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'bathrooms' => 'nullable|integer',
+            'property_type' => 'nullable|string|max:255',
+            'adult' => 'nullable|integer',
+            'children' => 'nullable|integer',
+            'infants' => 'nullable|integer',
+            'town' => 'required|string',
+            'zipcode' => 'required|integer',
+            'country' => 'required|string',
+            'property_id_proof_1' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'property_id_proof_2' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'file|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-        $property->update($request->all());
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation error.', 'errors' => $validator->errors()], 400);
+        }
 
-        return response()->json(['message' => 'Property updated successfully.', 'property' => $property], 200);
+        DB::beginTransaction();
+        try {
+            $property->update([
+                'name' => $request->name ?? $property->name,
+                'no_of_rooms' => $request->no_of_rooms ?? $property->no_of_rooms,
+                'no_of_beds' => $request->no_of_beds ?? $property->no_of_beds,
+                'about' => $request->about ?? $property->about,
+                'price' => $request->price ?? $property->price,
+                'price_type' => $request->price_type ?? $property->price_type,
+                'address' => $request->address ?? $property->address,
+                'latitude' => $request->latitude ?? $property->latitude,
+                'longitude' => $request->longitude ?? $property->longitude,
+                'bathrooms' => $request->bathrooms ?? $property->bathrooms,
+                'property_type' => $request->property_type ?? $property->property_type,
+                'adult' => $request->adult ?? $property->adult,
+                'children' => $request->children ?? $property->children,
+                'infants' => $request->infants ?? $property->infants,
+                'town' => $request->town ?? $property->town,
+                'zipcode' => $request->zipcode ?? $property->zipcode,
+                'country' => $request->country ?? $property->country,
+            ]);
+
+            if ($request->hasFile('property_id_proof_1')) {
+                if ($property->property_id_proof_1 && file_exists(public_path('uploads/property/propertyIds/' . $property->property_id_proof_1))) {
+                    unlink(public_path('uploads/property/propertyIds/' . $property->property_id_proof_1));
+                }
+
+                $idProof1Name = 'proof1_' . date('Ymd') . '_' . time() . '.' . $request->file('property_id_proof_1')->getClientOriginalExtension();
+                $request->file('property_id_proof_1')->move(public_path('uploads/property/propertyIds/'), $idProof1Name);
+                $property->property_id_proof_1 = $idProof1Name;
+            }
+
+            if ($request->hasFile('property_id_proof_2')) {
+                if ($property->property_id_proof_2 && file_exists(public_path('uploads/property/propertyIds/' . $property->property_id_proof_2))) {
+                    unlink(public_path('uploads/property/propertyIds/' . $property->property_id_proof_2));
+                }
+
+                $idProof2Name = 'proof2_' . date('Ymd') . '_' . time() . '.' . $request->file('property_id_proof_2')->getClientOriginalExtension();
+                $request->file('property_id_proof_2')->move(public_path('uploads/property/propertyIds/'), $idProof2Name);
+                $property->property_id_proof_2 = $idProof2Name;
+            }
+
+            $amenitiesIds = is_string($request->amenities_ids) ? explode(',', $request->amenities_ids) : $request->amenities_ids;
+            PropertyAmenity::where('property_id', $property->id)->delete();
+            foreach ($amenitiesIds as $amenityId) {
+                PropertyAmenity::create([
+                    'property_id' => $property->id,
+                    'amenities_id' => $amenityId,
+                    'created_by_id' => auth()->id(),
+                ]);
+            }
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $imageName = 'property_' . date('Ymd') . '_' . time() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('uploads/property/propertyImages/'), $imageName);
+
+                    PropertyImage::create([
+                        'property_id' => $property->id,
+                        'image' => $imageName,
+                        'created_by_id' => auth()->id(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+            $property->load('propertyAmenities', 'images');
+            return response()->json(['message' => 'Property updated successfully.', 'property' => $property], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error updating property.', 'error' => $e->getMessage()], 500);
+        }
     }
 
 

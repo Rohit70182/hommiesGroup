@@ -237,8 +237,6 @@ class AuthController extends Controller
         }
     }
 
-
-
     /**
      *
      * @OA\Post(
@@ -401,10 +399,6 @@ class AuthController extends Controller
             ], 403);
         }
     }
-
-
-
-
 
     /**
      *

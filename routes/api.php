@@ -121,19 +121,17 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'updateProperty'
         ]);
+        Route::get('/list', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'list'
+        ]);
+        Route::get('/getPropertyDetail/{id}', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'getPropertyDetail'
+        ]);
     });
 });
 
-Route::prefix('property')->group(function () {
-    Route::get('/list', [
-        \App\Http\Controllers\API\PropertyController::class,
-        'list'
-    ]);
-    Route::get('/getPropertyDetail/{id}', [
-        \App\Http\Controllers\API\PropertyController::class,
-        'getPropertyDetail'
-    ]);
-});
 Route::prefix('amanity')->group(function () {
     Route::get('/amenities', [
         \App\Http\Controllers\API\AmenityController::class,

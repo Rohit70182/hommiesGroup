@@ -1383,6 +1383,28 @@
                     "property"
                 ],
                 "operationId": "properties",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search properties by title or description",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Property One"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (default is 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Property List",
@@ -1484,6 +1506,18 @@
                                         "type": "integer",
                                         "example": 1
                                     },
+                                    "town": {
+                                        "type": "string",
+                                        "example": "canada"
+                                    },
+                                    "zipcode": {
+                                        "type": "integer",
+                                        "example": 178526
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "example": "Canada"
+                                    },
                                     "address": {
                                         "type": "string",
                                         "example": "123 Main St, Springfield"
@@ -1504,7 +1538,7 @@
                                     },
                                     "property_type": {
                                         "type": "string",
-                                        "example": "1,0,2"
+                                        "example": "1"
                                     },
                                     "adult": {
                                         "type": "integer",
@@ -1674,7 +1708,7 @@
                                         },
                                         "property_type": {
                                             "type": "string",
-                                            "example": "1,0,2"
+                                            "example": "1"
                                         },
                                         "adult": {
                                             "type": "integer",
@@ -1766,8 +1800,23 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
+                                "required": [
+                                    "name",
+                                    "no_of_rooms",
+                                    "no_of_beds",
+                                    "price",
+                                    "price_type",
+                                    "address",
+                                    "latitude",
+                                    "longitude",
+                                    "bathrooms",
+                                    "property_type",
+                                    "adult",
+                                    "children",
+                                    "infants"
+                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
@@ -1776,6 +1825,90 @@
                                     "no_of_rooms": {
                                         "type": "integer",
                                         "example": 4
+                                    },
+                                    "no_of_beds": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 200.5
+                                    },
+                                    "price_type": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "456 New Street, City"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 41.8781
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -87.6298
+                                    },
+                                    "bathrooms": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "property_type": {
+                                        "type": "string",
+                                        "example": "2"
+                                    },
+                                    "adult": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "children": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "infants": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "town": {
+                                        "type": "string",
+                                        "example": "canada"
+                                    },
+                                    "zipcode": {
+                                        "type": "integer",
+                                        "example": 178526
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "example": "Canada"
+                                    },
+                                    "amenities_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ]
+                                    },
+                                    "property_id_proof_1": {
+                                        "description": "Updated first property ID proof",
+                                        "type": "file"
+                                    },
+                                    "property_id_proof_2": {
+                                        "description": "Updated second property ID proof",
+                                        "type": "file"
+                                    },
+                                    "images[]": {
+                                        "description": "New images to upload or update",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "file"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -1793,6 +1926,17 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Property updated successfully."
+                                        },
+                                        "property": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "name": "Updated Property",
+                                                "no_of_rooms": 4,
+                                                "no_of_beds": 3,
+                                                "price": 200.5,
+                                                "address": "456 New Street, City"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -1809,6 +1953,22 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Property not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error."
                                         }
                                     },
                                     "type": "object"

@@ -42,6 +42,9 @@ class Property extends Model
         'adult',
         'children',
         'infants',
+        'town',
+        'zipcode',
+        'country',
         'property_id_proof_1',
         'property_id_proof_2',
         'created_by_id'
