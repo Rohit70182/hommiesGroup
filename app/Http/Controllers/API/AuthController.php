@@ -518,7 +518,6 @@ class AuthController extends Controller
 
     public function profileUpdate(Request $request)
     {
-
         $user = User::where('id', Auth::user()->id)->first();
         $fields = $request->all();
         $validator = Validator::make($fields, [

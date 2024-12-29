@@ -2,12 +2,12 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="{{url('/')}}">
-            <h3>Hommies Group</h3>
-                 <!-- <img src="{{ asset('public/assets/images/logoleft.png') }}" alt="laundry" width="80%"> -->
+                <h3>Hommies Group</h3>
+                <!-- <img src="{{ asset('public/assets/images/logoleft.png') }}" alt="laundry" width="80%"> -->
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-lg-auto align-items-center mr-lg-20 order-2 order-lg-1">
@@ -18,9 +18,9 @@
                         </a>
                     </li>
                     @guest
-<!--                     <li class="nav-item  "> -->
-<!--                         <a class="nav-link btn btn-bg log_buttn" href="{{url('/register')}}">Sign-up</a> -->
-<!--                     </li> -->
+                    <!--                     <li class="nav-item  "> -->
+                    <!--                         <a class="nav-link btn btn-bg log_buttn" href="{{url('/register')}}">Sign-up</a> -->
+                    <!--                     </li> -->
                     <li class="nav-item ">
                         <a class="nav-link btn btn-bg log_buttn" href="{{url('/login')}}">Log In</a>
                     </li>

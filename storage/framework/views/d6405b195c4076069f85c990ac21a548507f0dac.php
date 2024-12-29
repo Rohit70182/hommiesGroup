@@ -14,10 +14,7 @@
                   <h5 class="color_white my-3">Useful Links</h5>
                   <ul class="support-link">
                       <li><a href="#">Join the team </a></li>
-                      <li><a href="<?php echo e(url('/about')); ?>">About</a></li>
-
-                      <li><a href="#">Locations</a> </li>
-                      <li><a href="#">Gift Cards Press </a> </li>
+                      <!-- <li><a href="<?php echo e(url('/about')); ?>">About</a></li> -->
                   </ul>
               </div>
               <div class="col-lg-3">
@@ -39,12 +36,12 @@
                   </ul>
                   <ul class="app-link">
                       <li>
-                          <a href="https://apps.apple.com/ae/app/demo-service/id1596820554;">
+                          <a href="#">
                               <img src="<?php echo e(asset('public/assets/images/App_Store_Badge.svg')); ?>" alt="">
                           </a>
                       </li>
                       <li>
-                          <a href="https://play.google.com/store/apps/details?id=ae.demo-service.app_customer;">
+                          <a href="#">
                               <img class="gpay-img" src="<?php echo e(asset('public/assets/images/en-badge-web-generic (1).webp')); ?>" alt="">
                           </a>
                       </li>

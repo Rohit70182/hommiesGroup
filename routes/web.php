@@ -118,15 +118,6 @@ Route::middleware('auth')->group(function () {
         //Error logs
         Route::get('dashboard/logs', [LoggerController::class, 'logs']);
         Route::get('dashboad/logs/delete/{id}', [LoggerController::class, 'destroy']);
-        Route::get('testOpen', [EventController::class, 'blade']);
-        Route::get('/event/list', [EventController::class, 'index']);
-        Route::get('/event/add', [EventController::class, 'create' ]);
-        Route::get('edit/{id}', [EventController::class, 'edit']);
-        Route::post('/event/store', [EventController::class, 'store' ]);
-        Route::get('show/{id}', [EventController::class, 'show']);
-        Route::post('update/{id}', [EventController::class, 'update' ]);
-        Route::get('delete/{id}', [EventController::class, 'destroy']);
-        Route::get('softDelete/{id}', [EventController::class, 'softDelete']);
 
     });
     

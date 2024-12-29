@@ -27,6 +27,61 @@
         }
     ],
     "paths": {
+        "/amanity/amenities": {
+            "get": {
+                "tags": [
+                    "amenities"
+                ],
+                "operationId": "getAmenities",
+                "responses": {
+                    "200": {
+                        "description": "Amenity List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "WiFi"
+                                        },
+                                        "image": {
+                                            "type": "string",
+                                            "example": "wifi.png"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No amenities found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/user/register": {
             "post": {
                 "tags": [
@@ -706,1989 +761,6 @@
                 ]
             }
         },
-        "/booking/service-provider-list": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "operationId": "providers",
-                "responses": {
-                    "200": {
-                        "description": "Service Provider List",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "service one"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/service": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "addBooking",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "date",
-                                    "time_start",
-                                    "address_id",
-                                    "mobile",
-                                    "type_id"
-                                ],
-                                "properties": {
-                                    "type_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1 for service 2 for event"
-                                    },
-                                    "service_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "12"
-                                    },
-                                    "service_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "service_sub_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "2"
-                                    },
-                                    "addon": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "sub_services": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "instruction": {
-                                        "type": "text",
-                                        "format": "text",
-                                        "example": "Write the Instructions"
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "2022-10-10"
-                                    },
-                                    "time_start": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "time_end": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "address_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    },
-                                    "mobile": {
-                                        "type": "string",
-                                        "example": "9187678965"
-                                    },
-                                    "promo_id": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "promoCode"
-                                    },
-                                    "event_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": " successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/edit-cart": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "editCartItem",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "date",
-                                    "time_start",
-                                    "address_id",
-                                    "mobile",
-                                    "type_id",
-                                    "booking_id"
-                                ],
-                                "properties": {
-                                    "booking_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "addon": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "sub_services": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "instruction": {
-                                        "type": "text",
-                                        "format": "text",
-                                        "example": "Write the Instructions"
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "2022-10-10"
-                                    },
-                                    "time_start": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "time_end": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "address_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    },
-                                    "mobile": {
-                                        "type": "string",
-                                        "example": "9187678965"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": " successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/service-provider": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "serviceProviderBooking",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "date",
-                                    "time_start",
-                                    "address_id",
-                                    "mobile",
-                                    "type_id",
-                                    "service_provider_id"
-                                ],
-                                "properties": {
-                                    "service_provider_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "type_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1 for service 2 for event"
-                                    },
-                                    "service_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "12"
-                                    },
-                                    "service_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "service_sub_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "2"
-                                    },
-                                    "addon": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "sub_services": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "instruction": {
-                                        "type": "text",
-                                        "format": "text",
-                                        "example": "Write the Instructions"
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "2022-10-10"
-                                    },
-                                    "time_start": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "time_end": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "address_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    },
-                                    "mobile": {
-                                        "type": "string",
-                                        "example": "9187678965"
-                                    },
-                                    "promo_id": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "promoCode"
-                                    },
-                                    "event_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": " successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/add-cart": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "addBookingToCart",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "date",
-                                    "time_start",
-                                    "address_id",
-                                    "mobile",
-                                    "type_id"
-                                ],
-                                "properties": {
-                                    "type_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1 for service 2 for event"
-                                    },
-                                    "service_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "12"
-                                    },
-                                    "service_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "service_sub_cat": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "2"
-                                    },
-                                    "addon": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "sub_services": {
-                                        "type": "string",
-                                        "example": "[{'id':1, 'qty':1},{'id':2, 'qty':2},{'id':3, 'qty':3},{'id':4, 'qty':5}]"
-                                    },
-                                    "instruction": {
-                                        "type": "text",
-                                        "format": "text",
-                                        "example": "Write the Instructions"
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "2022-10-10"
-                                    },
-                                    "time_start": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "time_end": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
-                                    },
-                                    "address_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    },
-                                    "mobile": {
-                                        "type": "string",
-                                        "example": "9187678965"
-                                    },
-                                    "event_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "24"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": " successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/remove-cart": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "removeBookingFromCart",
-                "parameters": [
-                    {
-                        "name": "booking_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/book-cart": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "bookCartItems",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "promo_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/cart/detail": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "cartDetail",
-                "parameters": [
-                    {
-                        "name": "booking_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/detail": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "bookingDetail",
-                "parameters": [
-                    {
-                        "name": "order_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "show_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "example": "1 for pending and confirmed, 2 for cancelled and completed"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/cancel-reasons": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "cancelReasons",
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/service-detail": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "getServiceDetail",
-                "parameters": [
-                    {
-                        "name": "booking_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/date-list": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "bookingDateList",
-                "parameters": [
-                    {
-                        "name": "date",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "2022-12-21"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "user_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "subcategory_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2022:10:10"
-                                        },
-                                        "time_start": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "time_end": {
-                                            "type": "string",
-                                            "example": "10:10"
-                                        },
-                                        "address_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "instruction": {
-                                            "type": "text",
-                                            "example": "This is instructions"
-                                        },
-                                        "type_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "state_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "mobile": {
-                                            "type": "string",
-                                            "example": "9876543210"
-                                        },
-                                        "coupon_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "event_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/cancel": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "cancelBooking",
-                "parameters": [
-                    {
-                        "name": "order_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "reason_id": {
-                                        "type": "integer",
-                                        "format": "number",
-                                        "example": "1"
-                                    },
-                                    "reason_message": {
-                                        "type": "string",
-                                        "format": "text",
-                                        "example": "This is the message"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": " successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/service/delete": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "deleteBooking",
-                "parameters": [
-                    {
-                        "name": "booking_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Profile  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/bookings": {
-            "get": {
-                "tags": [
-                    "favourite"
-                ],
-                "summary": "Get list of booking",
-                "description": "Returns list of bookings",
-                "operationId": "getBookingList",
-                "parameters": [
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                }
-            }
-        },
-        "/booking/slots": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "bookingSlots",
-                "parameters": [
-                    {
-                        "name": "date",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "2022-12-13"
-                        }
-                    },
-                    {
-                        "name": "start_time",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "example": "14:00"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "time_start": {
-                                            "type": "integer",
-                                            "example": "11:00"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/custom-request": {
-            "post": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "customRequest",
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "images[]",
-                                    "name",
-                                    "description"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Paint"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Paint rooms"
-                                    },
-                                    "images[]": {
-                                        "description": "Add files to upload",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "file",
-                                            "format": "binary"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Provider Detail",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "provider one"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/request-detail": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "requestDetail",
-                "parameters": [
-                    {
-                        "name": "request_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "example": "1"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "req_name": {
-                                            "type": "string",
-                                            "example": "Request Name"
-                                        },
-                                        "req_desc": {
-                                            "type": "string",
-                                            "example": "Request Description"
-                                        },
-                                        "req_user": {
-                                            "type": "integer",
-                                            "example": "33"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/booking/request-cancel": {
-            "get": {
-                "tags": [
-                    "booking"
-                ],
-                "summary": "",
-                "operationId": "requestCancel",
-                "parameters": [
-                    {
-                        "name": "request_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": "1"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Request Cancel",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Request Cancelled Successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/chats/send-message": {
             "post": {
                 "tags": [
@@ -3240,179 +1312,260 @@
                 ]
             }
         },
-        "/event/event-add": {
+        "/property/list": {
+            "get": {
+                "tags": [
+                    "property"
+                ],
+                "operationId": "properties",
+                "responses": {
+                    "200": {
+                        "description": "Property List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Property One"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/properties": {
             "post": {
                 "tags": [
-                    "event"
+                    "property"
                 ],
-                "summary": "",
-                "operationId": "addEvent",
+                "summary": "Add a new property",
+                "description": "Register a new property with additional details",
+                "operationId": "addProperty",
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "title",
-                                    "description",
-                                    "services",
-                                    "price"
+                                    "name",
+                                    "no_of_rooms",
+                                    "no_of_beds",
+                                    "price",
+                                    "price_type",
+                                    "address",
+                                    "latitude",
+                                    "longitude",
+                                    "bathrooms",
+                                    "property_type",
+                                    "adult",
+                                    "children",
+                                    "infants",
+                                    "property_id_proof_1",
+                                    "property_id_proof_2"
                                 ],
                                 "properties": {
-                                    "title": {
+                                    "name": {
                                         "type": "string",
-                                        "format": "string",
-                                        "example": "Marriage"
+                                        "example": "Beautiful House"
                                     },
-                                    "description": {
+                                    "no_of_rooms": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "no_of_beds": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "about": {
                                         "type": "string",
-                                        "format": "string",
-                                        "example": "Marriage"
+                                        "example": "A cozy place for vacation."
                                     },
                                     "price": {
                                         "type": "number",
-                                        "format": "number",
-                                        "example": "45"
+                                        "format": "float",
+                                        "example": 150.75
                                     },
-                                    "services": {
-                                        "type": "string",
-                                        "format": "comma seperated",
-                                        "example": "1,2"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Event Added Successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Not Found Error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/event/event-update": {
-            "post": {
-                "tags": [
-                    "event"
-                ],
-                "summary": "",
-                "operationId": "updateEvent",
-                "parameters": [
-                    {
-                        "name": "event_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "properties": {
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2022-10-10"
-                                    },
-                                    "time_start": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "10:10"
+                                    "price_type": {
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "address": {
                                         "type": "string",
-                                        "format": "number",
-                                        "example": "24 address"
+                                        "example": "123 Main St, Springfield"
                                     },
-                                    "lattitude": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "124.34"
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 40.7128
                                     },
                                     "longitude": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "124.34"
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -74.006
                                     },
-                                    "mobile": {
-                                        "type": "string",
-                                        "format": "number",
-                                        "example": "9187678965"
+                                    "bathrooms": {
+                                        "type": "integer",
+                                        "example": 2
                                     },
-                                    "promo_id": {
+                                    "property_type": {
                                         "type": "string",
-                                        "format": "number",
-                                        "example": "promoCode"
+                                        "example": "1,0,2"
+                                    },
+                                    "adult": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "children": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "infants": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "amenities_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "property_id_proof_1": {
+                                        "description": "First property ID proof document",
+                                        "type": "file"
+                                    },
+                                    "property_id_proof_2": {
+                                        "description": "Second property ID proof document",
+                                        "type": "file"
+                                    },
+                                    "images[]": {
+                                        "description": "Multiple images to upload",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "file"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Property created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property created successfully."
+                                        },
+                                        "property": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "name": "Beautiful House",
+                                                "no_of_rooms": 3,
+                                                "no_of_beds": 2,
+                                                "price": 150.75,
+                                                "address": "123 Main St, Springfield"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/edit/{id}": {
+            "post": {
+                "tags": [
+                    "property"
+                ],
+                "operationId": "updateProperty",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Property"
+                                    },
+                                    "no_of_rooms": {
+                                        "type": "integer",
+                                        "example": 4
                                     }
                                 },
                                 "type": "object"
@@ -3422,30 +1575,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Event Added Successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
+                        "description": "Property updated successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Something went wrong"
+                                            "example": "Property updated successfully."
                                         }
                                     },
                                     "type": "object"
@@ -3454,30 +1591,14 @@
                         }
                     },
                     "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "integer",
-                                            "example": "Event  Updated successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
+                        "description": "Property not found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Something went wrong"
+                                            "example": "Property not found."
                                         }
                                     },
                                     "type": "object"
@@ -3493,938 +1614,78 @@
                 ]
             }
         },
-        "/event/event-delete": {
-            "post": {
-                "tags": [
-                    "event"
-                ],
-                "summary": "",
-                "operationId": "deleteEvent",
-                "parameters": [
-                    {
-                        "name": "event_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Event Deleted Successfully!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Event Not Found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/favourite/favourites": {
+        "/property/myFavourites": {
             "get": {
                 "tags": [
-                    "favourite"
+                    "property"
                 ],
-                "summary": "Get list of favourites",
-                "description": "Returns list of favourites",
-                "operationId": "getFavouritesList",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Get a list of favourite items for the authenticated user",
+                "description": "Returns a list of active favourite items for the authenticated user.",
+                "operationId": "myFavourites",
                 "responses": {
                     "200": {
                         "description": "Successful operation"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "No favourite items found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No providers are in your favourites"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
-        "/favourite/favourite/": {
+        "/property/markfavourite": {
             "post": {
                 "tags": [
-                    "favourite"
+                    "property"
                 ],
-                "summary": "",
-                "description": "Changes state from state to not_favourite and vice versa",
-                "operationId": "addFavourite",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                }
-            }
-        },
-        "/service/category-list": {
-            "get": {
-                "tags": [
-                    "category"
-                ],
-                "summary": "",
-                "operationId": "category",
-                "parameters": [
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "category name",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "category Object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "category one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "category description"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/subcategory-list": {
-            "get": {
-                "tags": [
-                    "category"
-                ],
-                "summary": "",
-                "operationId": "subcategory",
-                "parameters": [
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "subcategory name",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "category",
-                        "in": "query",
-                        "description": "category id",
-                        "required": true,
-                        "schema": {
-                            "type": "number"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Sub categories object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "category one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "category description"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/list": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "service",
-                "parameters": [
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "service name",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "category",
-                        "in": "query",
-                        "description": "category id",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "service one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "service description"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "sub_category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category": {
-                                            "type": "object",
-                                            "example": "{'id': 1,'name': 'category one','desc': 'category description'}"
-                                        },
-                                        "sub_category": {
-                                            "type": "object",
-                                            "example": "{'id': 1,'name': 'sub category one','desc': 'sub category description'}"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/detail": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "serviceDetail",
-                "parameters": [
-                    {
-                        "name": "search_id",
-                        "in": "query",
-                        "description": "service id",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "service one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "service description"
-                                        },
-                                        "category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "sub_category_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "category": {
-                                            "type": "object",
-                                            "example": "{'id': 1,'name': 'category one','desc': 'category description'}"
-                                        },
-                                        "sub_category": {
-                                            "type": "object",
-                                            "example": "{'id': 1,'name': 'sub category one','desc': 'sub category description'}"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/add-on": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "AddOn",
-                "parameters": [
-                    {
-                        "name": "addon_id",
-                        "in": "query",
-                        "description": "addon id",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "addon one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "addon description"
-                                        },
-                                        "price": {
-                                            "type": "string",
-                                            "example": "addon price"
-                                        },
-                                        "service_id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/coupon-list": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "CouponList",
-                "parameters": [
-                    {
-                        "name": "coupon_name",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "addon one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "addon description"
-                                        },
-                                        "amount": {
-                                            "type": "string",
-                                            "example": "addon price"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/sub-services-list": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "subServiceList",
-                "parameters": [
-                    {
-                        "name": "service_id",
-                        "in": "query",
-                        "description": "service id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "category Object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "category one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "category description"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/event-list": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "EventList",
-                "parameters": [
-                    {
-                        "name": "event_id",
-                        "in": "query",
-                        "description": "event id",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "addon one"
-                                        },
-                                        "desc": {
-                                            "type": "string",
-                                            "example": "addon description"
-                                        },
-                                        "amount": {
-                                            "type": "string",
-                                            "example": "addon price"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/provider-list": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "providerList",
-                "parameters": [
-                    {
-                        "name": "service_id",
-                        "in": "query",
-                        "description": "service id",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "provider_name",
-                        "in": "query",
-                        "description": "provider name",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Service object",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "provider one"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/provider-detail": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "summary": "",
-                "operationId": "providerDetail",
-                "parameters": [
-                    {
-                        "name": "provider_id",
-                        "in": "query",
-                        "description": "provider id",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Provider Detail",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": "1"
-                                        },
-                                        "name": {
-                                            "type": "string",
-                                            "example": "provider one"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Something went wrong"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/add-price": {
-            "post": {
-                "tags": [
-                    "service"
-                ],
-                "operationId": "serviceAddPrice",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "summary": "Mark Favorite property",
+                "description": "Register a new property with additional details",
+                "operationId": "markfavourite",
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "service_id"
+                                    "property_id"
                                 ],
                                 "properties": {
-                                    "service_id": {
-                                        "description": "",
-                                        "type": "input",
-                                        "example": ""
-                                    },
-                                    "service_price": {
-                                        "description": "",
-                                        "type": "input",
-                                        "example": ""
-                                    },
-                                    "sub_service_id": {
-                                        "description": "",
-                                        "type": "input",
-                                        "example": ""
-                                    },
-                                    "sub_service_price": {
-                                        "description": "",
-                                        "type": "input",
-                                        "example": ""
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": "1"
                                     }
                                 },
                                 "type": "object"
@@ -4433,57 +1694,47 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Price Added",
+                    "201": {
+                        "description": "Property favorite and unfavorite successfully.",
                         "content": {
-                            "application/json": {}
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/service/nearby-providers": {
-            "get": {
-                "tags": [
-                    "service"
-                ],
-                "operationId": "nearbyServiceProvider",
-                "parameters": [
-                    {
-                        "name": "lat",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property favorite and unfavorite successfully."
+                                        },
+                                        "property": {
+                                            "type": "object",
+                                            "example": {
+                                                "id": 1,
+                                                "name": "Beautiful House",
+                                                "no_of_rooms": 3,
+                                                "no_of_beds": 2,
+                                                "price": 150.75,
+                                                "address": "123 Main St, Springfield"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
                         }
                     },
-                    {
-                        "name": "long",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "radius",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Provider Found Successfully",
+                    "400": {
+                        "description": "Validation error",
                         "content": {
-                            "application/json": {}
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 },
@@ -4507,32 +1758,20 @@
     },
     "tags": [
         {
+            "name": "amenities",
+            "description": "amenities"
+        },
+        {
             "name": "users",
             "description": "users"
-        },
-        {
-            "name": "booking",
-            "description": "booking"
-        },
-        {
-            "name": "favourite",
-            "description": "favourite"
         },
         {
             "name": "chats",
             "description": "chats"
         },
         {
-            "name": "event",
-            "description": "event"
-        },
-        {
-            "name": "category",
-            "description": "category"
-        },
-        {
-            "name": "service",
-            "description": "service"
+            "name": "property",
+            "description": "property"
         }
     ],
     "security": [

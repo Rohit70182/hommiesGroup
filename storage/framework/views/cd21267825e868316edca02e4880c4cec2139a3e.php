@@ -44,7 +44,7 @@
       <div class="copyright-menu text-center">
         <ul>
           <li>
-            <p>©Copyright <a href="#">Hommies Group</a> | All Rights Reserved</p>
+            <p>©Copyright <a href="<?php echo e(url('/')); ?>">Hommies Group</a> | All Rights Reserved</p>
           </li>
         </ul>
       </div>

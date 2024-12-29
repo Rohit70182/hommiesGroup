@@ -95,210 +95,44 @@ Route::prefix('user')->group(function () {
     ]);
 });
 
-Route::prefix('favourite')->group(function () {
-    Route::get('/favourites', [
-        \App\Http\Controllers\API\FavouriteController::class,
-        'favourites'
-    ]);
-    Route::post('/favourite', [
-        \App\Http\Controllers\API\FavouriteController::class,
-        'favourite'
-    ]);
-});
-
-Route::prefix('booking')->group(function () {
+Route::prefix('property')->group(function () {
     Route::group([
         'middleware' => [
             'auth:sanctum'
         ]
     ], function () {
-        Route::post('/service-provider', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookServiceProvider'
+        Route::post('/properties', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'addProperty'
         ]);
-
-        Route::post('/edit-cart', [
-            \App\Http\Controllers\API\BookingController::class,
-            'editCartItem'
+        Route::post('/markfavourite', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'markfavourite'
         ]);
-
-        Route::get('/service-provider-list', [
-            \App\Http\Controllers\API\BookingController::class,
-            'serviceProviders'
+        Route::get('/myFavourites', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'myFavourites'
         ]);
-
-        Route::get('/date-list', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookingDateList'
-        ]);
-
-        Route::get('/booking-list', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookings'
-        ]);
-
-        Route::get('/detail', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookingDetail'
-        ]);
-
-        Route::post('/service', [
-            \App\Http\Controllers\API\BookingController::class,
-            'add'
-        ]);
-
-        Route::post('/cancel', [
-            \App\Http\Controllers\API\BookingController::class,
-            'cancel'
-        ]);
-
-        Route::post('/service/delete', [
-            \App\Http\Controllers\API\BookingController::class,
-            'delete'
-        ]);
-
-        Route::get('/slots', [
-            \App\Http\Controllers\API\BookingController::class,
-            'slots'
-        ]);
-
-        Route::get('/cancel-reasons', [
-            \App\Http\Controllers\API\BookingController::class,
-            'cancelReasons'
-        ]);
-
-        Route::get('/cancel-reasons', [
-            \App\Http\Controllers\API\BookingController::class,
-            'cancelReasons'
-        ]);
-
-        Route::post('/book-cart', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookCart'
-        ]);
-
-
-        Route::post('/custom-request', [
-            \App\Http\Controllers\API\BookingController::class,
-            'customRequest'
-        ]);
-
-        Route::get('/service-detail', [
-            \App\Http\Controllers\API\BookingController::class,
-            'serviceDetail'
-        ]);
-
-        Route::get('/request-detail', [
-            \App\Http\Controllers\API\BookingController::class,
-            'requestDetail'
-        ]);
-
-        Route::post('/service-provider', [
-            \App\Http\Controllers\API\BookingController::class,
-            'bookServiceProvider'
-        ]);
-
-        Route::post('/add-cart', [
-            \App\Http\Controllers\API\BookingController::class,
-            'addToCart'
-        ]);
-
-        Route::get('/remove-cart', [
-            \App\Http\Controllers\API\BookingController::class,
-            'removeFromCart'
-        ]);
-
-        Route::get('/cart/detail', [
-            \App\Http\Controllers\API\BookingController::class,
-            'getCartDetail'
-        ]);
-
-        Route::get('/request-cancel', [
-            \App\Http\Controllers\API\BookingController::class,
-            'requestCancel'
+        Route::post('/edit/{id}', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'updateProperty'
         ]);
     });
 });
 
-Route::prefix('service')->group(function () {
-    Route::get('/category-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'categoryList'
-    ]);
-
-    Route::get('/add-on', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'addOnDetail'
-    ]);
-
-    Route::get('/subcategory-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'subCategoryList'
-    ]);
-
+Route::prefix('property')->group(function () {
     Route::get('/list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'serviceList'
+        \App\Http\Controllers\API\PropertyController::class,
+        'list'
     ]);
-    Route::get('/detail', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'serviceDetail'
-    ]);
-    Route::get('/coupon-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'couponList'
-    ]);
-    Route::get('/event-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'eventList'
-    ]);
-    Route::get('/event-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'eventList'
-    ]);
-    Route::get('/sub-services-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'subServicesList'
-    ]);
-    Route::get('/provider-list', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'providerList'
-    ]);
-    Route::get('/provider-detail', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'providerDetail'
-    ]);
-    Route::post('/add-price', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'addprice'
-    ])->middleware('auth:sanctum', 'serviceprovider',);
-
-    Route::get('/nearby-providers', [
-        \App\Http\Controllers\API\ServiceController::class,
-        'nearByProvider'
+});
+Route::prefix('amanity')->group(function () {
+    Route::get('/amenities', [
+        \App\Http\Controllers\API\AmenityController::class,
+        'getAmenities'
     ]);
 });
 
-Route::prefix('event')->group(function () {
-    Route::group([
-        'middleware' => [
-            'auth:sanctum'
-        ]
-    ], function () {
-        Route::post('/event-add', [
-            \App\Http\Controllers\API\EventsController::class,
-            'add'
-        ]);
-        Route::post('/event-update', [
-            \App\Http\Controllers\API\EventsController::class,
-            'update'
-        ]);
-        Route::post('/event-delete', [
-            \App\Http\Controllers\API\EventsController::class,
-            'delete'
-        ]);
-    });
-});
 
 Route::prefix('chats')->group(function () {
     Route::group([
