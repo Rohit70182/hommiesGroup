@@ -761,6 +761,71 @@
                 ]
             }
         },
+        "/user/delete-account": {
+            "delete": {
+                "tags": [
+                    "users"
+                ],
+                "summary": "Delete User Account",
+                "description": "Delete the authenticated user's account",
+                "operationId": "deleteUserAccount",
+                "responses": {
+                    "200": {
+                        "description": "Account deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "Account deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to delete account"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/chats/send-message": {
             "post": {
                 "tags": [
@@ -1522,6 +1587,151 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Validation error."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/getPropertyDetail/{id}": {
+            "get": {
+                "tags": [
+                    "property"
+                ],
+                "summary": "Get Property Details",
+                "description": "Retrieve details of a property by its ID",
+                "operationId": "getPropertyDetail",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the property",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Property details retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Beautiful House"
+                                        },
+                                        "no_of_rooms": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "no_of_beds": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "about": {
+                                            "type": "string",
+                                            "example": "A cozy place for vacation."
+                                        },
+                                        "price": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 150.75
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "example": "123 Main St, Springfield"
+                                        },
+                                        "latitude": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 40.7128
+                                        },
+                                        "longitude": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": -74.006
+                                        },
+                                        "bathrooms": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "property_type": {
+                                            "type": "string",
+                                            "example": "1,0,2"
+                                        },
+                                        "adult": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "children": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "infants": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "property_id_proof_1": {
+                                            "type": "string",
+                                            "example": "proof1_20240807_123456.jpg"
+                                        },
+                                        "property_id_proof_2": {
+                                            "type": "string",
+                                            "example": "proof2_20240807_123457.jpg"
+                                        },
+                                        "amenities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "Pool",
+                                                "Wi-Fi",
+                                                "Parking"
+                                            ]
+                                        },
+                                        "images": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "image1.jpg",
+                                                "image2.jpg"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property not found."
                                         }
                                     },
                                     "type": "object"

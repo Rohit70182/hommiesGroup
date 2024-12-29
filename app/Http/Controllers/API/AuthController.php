@@ -212,7 +212,7 @@ class AuthController extends Controller
                 'dob' => $fields['dob'],
                 'bio' => $fields['bio'],
                 'password' => Hash::make($fields['password']),
-                'state_id' => User::STATE_INACTIVE,
+                'state_id' => User::STATE_ACTIVE,
                 'role' => User::ROLE_SERVICE_PROVIDER,
                 'id_proof_1' => isset($idProof1Name) ? $idProof1Name : null,
                 'id_proof_2' => isset($idProof2Name) ? $idProof2Name : null,
@@ -225,7 +225,7 @@ class AuthController extends Controller
             DB::commit();
             return response([
                 'message' => 'Provider Registered Successfully',
-                'provider' => $provider,
+                'user' => $provider,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -324,7 +324,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('authToken')->plainTextToken;
         $response = [
-            'details' => $user,
+            'user' => $user,
             'token' => $token
         ];
 
@@ -342,7 +342,7 @@ class AuthController extends Controller
             $device = DeviceDetail::create($deviceDetails);
             return response([
                 'message' => 'Logged In Successfully',
-                'details' => $user,
+                'user' => $user,
                 'token' => $token
             ], 200);
         }
@@ -389,7 +389,7 @@ class AuthController extends Controller
             $user = User::where('access_token', $token)->first();
 
             if ($user) {
-                return response(['details' => $user], 200);
+                return response(['user' => $user], 200);
             } else {
                 return response()->json([
                     'message' => 'Invalid token or user not found.'
@@ -518,7 +518,7 @@ class AuthController extends Controller
 
     public function profileUpdate(Request $request)
     {
-        $user = User::where('id', Auth::user()->id)->first();
+        $user = User::where('id', auth()->id())->first();
         $fields = $request->all();
         $validator = Validator::make($fields, [
             'dob' => 'required|date|before:today',
@@ -541,7 +541,7 @@ class AuthController extends Controller
         }
 
         if ($request->phone_number == $user->phone) {
-            if ($request->phone_number == Auth::user()->phone) {
+            if ($request->phone_number == auth()->user()->phone) {
             }
         }
 
@@ -559,13 +559,13 @@ class AuthController extends Controller
 
         if ($user->save()) {
 
-            $user = User::where('id', Auth::user()->id)->first();
+            $user = User::where('id', auth()->id())->first();
             // $user->is_complete = 1;
             $user->save();
 
             return response()->json([
                 "message" => "Profile updated successfully",
-                'details' => $user
+                'user' => $user
             ], 200);
         }
 
@@ -613,7 +613,7 @@ class AuthController extends Controller
      */
     public function changePassword(Request $request)
     {
-        $user = User::where('id', Auth::user()->id)->first();
+        $user = User::where('id', auth()->id())->first();
         $fields = $request->all();
         $validator = Validator::make($fields, [
             'old-password' => [
@@ -689,13 +689,75 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = auth()->user();
 
-        $user_id = Auth::user()->id;
+        if (!$user) {
+            return response(['message' => 'User not authenticated'], 401);
+        }
+
         $device_token = $request->bearerToken();
 
-        // delete on 'user_device_tokens'
-        DeviceDetail::where('created_by_id', $user_id)->where('device_token', $device_token)->delete();
+        DeviceDetail::where('created_by_id', $user->id)
+            ->where('device_token', $device_token)
+            ->delete();
 
-        return response(['message' => 'You have been successfully logged out!'], 200);
+        $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
+
+        $newToken = $user->createToken('authToken')->plainTextToken;
+        $user->update(['access_token' => $newToken]);
+
+        return response([
+            'message' => 'You have been successfully logged out!'
+        ], 200);
+    }
+
+
+    /**
+     * @OA\Delete(
+     * path="/user/delete-account",
+     * summary="Delete User Account",
+     * description="Delete the authenticated user's account",
+     * operationId="deleteUserAccount",
+     * tags={"users"},
+     * security={{ "sanctum": {} }},
+     * 
+     * @OA\Response(
+     *    response=200,
+     *    description="Account deleted successfully",
+     *    @OA\JsonContent(
+     *       @OA\Property(property="status", type="string", example="Account deleted successfully"),
+     *    )
+     * ),
+     * @OA\Response(
+     *    response=401,
+     *    description="Unauthorized",
+     *    @OA\JsonContent(
+     *       @OA\Property(property="message", type="string", example="Unauthorized"),
+     *    )
+     * ),
+     * @OA\Response(
+     *    response=500,
+     *    description="Internal Server Error",
+     *    @OA\JsonContent(
+     *       @OA\Property(property="message", type="string", example="Failed to delete account"),
+     *    )
+     * )
+     * )
+     */
+    public function deleteUserAccount(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $user->tokens()->delete();
+            $user->delete();
+
+            return response()->json([
+                'status' => 'Account deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete account'
+            ], 500);
+        }
     }
 }

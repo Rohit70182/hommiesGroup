@@ -208,6 +208,99 @@ class PropertyController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/property/getPropertyDetail/{id}",
+     *      operationId="getPropertyDetail",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      summary="Get Property Details",
+     *      description="Retrieve details of a property by its ID",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the property",
+     *          @OA\Schema(type="integer", example=1)
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Property details retrieved successfully.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example=1),
+     *              @OA\Property(property="name", type="string", example="Beautiful House"),
+     *              @OA\Property(property="no_of_rooms", type="integer", example=3),
+     *              @OA\Property(property="no_of_beds", type="integer", example=2),
+     *              @OA\Property(property="about", type="string", example="A cozy place for vacation."),
+     *              @OA\Property(property="price", type="number", format="float", example=150.75),
+     *              @OA\Property(property="address", type="string", example="123 Main St, Springfield"),
+     *              @OA\Property(property="latitude", type="number", format="float", example=40.7128),
+     *              @OA\Property(property="longitude", type="number", format="float", example=-74.0060),
+     *              @OA\Property(property="bathrooms", type="integer", example=2),
+     *              @OA\Property(property="property_type", type="string", example="1,0,2"),
+     *              @OA\Property(property="adult", type="integer", example=2),
+     *              @OA\Property(property="children", type="integer", example=1),
+     *              @OA\Property(property="infants", type="integer", example=1),
+     *              @OA\Property(property="property_id_proof_1", type="string", example="proof1_20240807_123456.jpg"),
+     *              @OA\Property(property="property_id_proof_2", type="string", example="proof2_20240807_123457.jpg"),
+     *              @OA\Property(property="amenities", type="array", @OA\Items(type="string"), example={"Pool", "Wi-Fi", "Parking"}),
+     *              @OA\Property(property="images", type="array", @OA\Items(type="string"), example={"image1.jpg", "image2.jpg"})
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Property not found.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property not found.")
+     *          )
+     *      )
+     * )
+     */
+    public function getPropertyDetail($id)
+    {
+        try {
+            $property = Property::with(['propertyAmenities.amenity', 'images'])
+                ->find($id);
+
+            if (!$property) {
+                return response()->json(['message' => 'Property not found.'], 404);
+            }
+
+            $formattedAmenities = $property->propertyAmenities->map(function ($amenity) {
+                return $amenity->amenity->name ?? 'Unknown Amenity';
+            });
+
+            $formattedImages = $property->images->map(function ($image) {
+                return asset('uploads/property/propertyImages/' . $image->image);
+            });
+
+            return response()->json([
+                'id' => $property->id,
+                'name' => $property->name,
+                'no_of_rooms' => $property->no_of_rooms,
+                'no_of_beds' => $property->no_of_beds,
+                'about' => $property->about,
+                'price' => $property->price,
+                'price_type' => $property->price_type,
+                'address' => $property->address,
+                'latitude' => $property->latitude,
+                'longitude' => $property->longitude,
+                'bathrooms' => $property->bathrooms,
+                'property_type' => $property->property_type,
+                'adult' => $property->adult,
+                'children' => $property->children,
+                'infants' => $property->infants,
+                'property_id_proof_1' => asset('uploads/property/propertyIds/' . $property->property_id_proof_1),
+                'property_id_proof_2' => asset('uploads/property/propertyIds/' . $property->property_id_proof_2),
+                'amenities' => $formattedAmenities,
+                'images' => $formattedImages,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching property details.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
 
     /**
      * @OA\Post(

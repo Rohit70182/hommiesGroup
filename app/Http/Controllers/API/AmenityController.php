@@ -37,7 +37,7 @@ class AmenityController extends Controller
         $amenities = Amenity::all();
         if ($amenities->isNotEmpty()) {
             return response()->json([
-                'list' => $amenities,
+                'amenities' => $amenities,
                 'message' => 'Amenities list fetched successfully.'
             ], 200);
         } else {

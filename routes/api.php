@@ -28,6 +28,10 @@ Route::prefix('user')->group(function () {
             \App\Http\Controllers\API\AuthController::class,
             'changePassword'
         ]);
+        Route::delete('/delete-account', [
+            \App\Http\Controllers\API\AuthController::class,
+            'deleteUserAccount'
+        ]);
         Route::get('/logout', [
             \App\Http\Controllers\API\AuthController::class,
             'logout'
@@ -124,6 +128,10 @@ Route::prefix('property')->group(function () {
     Route::get('/list', [
         \App\Http\Controllers\API\PropertyController::class,
         'list'
+    ]);
+    Route::get('/getPropertyDetail/{id}', [
+        \App\Http\Controllers\API\PropertyController::class,
+        'getPropertyDetail'
     ]);
 });
 Route::prefix('amanity')->group(function () {
