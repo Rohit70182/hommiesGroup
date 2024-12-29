@@ -93,13 +93,16 @@ class PropertyController extends Controller
             ])->first();
             $property->is_favorite = $item ? true : false;
         });
+        $meta_count = [
+            'total_count' => $totalProperties,
+            'current_page' => $properties->currentPage(),
+            'total_pages' => $properties->lastPage(),
+        ];
 
         if ($properties->isNotEmpty()) {
             return response()->json([
                 'property' => $properties->items(),
-                'total_count' => $totalProperties,
-                'current_page' => $properties->currentPage(),
-                'total_pages' => $properties->lastPage(),
+                'meta_count' => $meta_count,
                 'message' => 'Property list fetched successfully.'
             ], 200);
         } else {
@@ -107,6 +110,125 @@ class PropertyController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/property/nearby",
+     *      operationId="nearbyProperties",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      @OA\Parameter(
+     *          name="latitude",
+     *          in="query",
+     *          required=true,
+     *          description="Latitude of the user's location",
+     *          @OA\Schema(
+     *              type="number",
+     *              format="float",
+     *              example=30.7046
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="longitude",
+     *          in="query",
+     *          required=true,
+     *          description="Longitude of the user's location",
+     *          @OA\Schema(
+     *              type="number",
+     *              format="float",
+     *              example=-76.7179
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          required=false,
+     *          description="Page number for pagination (default is 1)",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Nearby Property List",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example="1"),
+     *              @OA\Property(property="name", type="string", example="Property One"),
+     *              @OA\Property(property="distance", type="string", example="2.5 miles"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Not Found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Something went wrong"),
+     *          )
+     *      ),
+     * )
+     */
+    public function nearbyProperties(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'User is not authenticated.'], 401);
+        }
+
+        $latitude = $request->get('latitude');
+        $longitude = $request->get('longitude');
+        $page = $request->get('page', 1);
+
+        if (!$latitude || !$longitude) {
+            return response()->json(['message' => 'Latitude and Longitude are required.'], 400);
+        }
+
+        $propertiesQuery = Property::query();
+
+        if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
+            $propertiesQuery->where('created_by_id', auth()->id());
+        }
+
+        $propertiesQuery->selectRaw(
+            "*, 
+        (3959 * acos(
+            cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + 
+            sin(radians(?)) * sin(radians(latitude))
+        )) AS distance_in_miles,
+        (6371000 * acos(
+            cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + 
+            sin(radians(?)) * sin(radians(latitude))
+        )) AS distance_in_meters",
+            [$latitude, $longitude, $latitude, $latitude, $longitude, $latitude]
+        );
+
+        $properties = $propertiesQuery->orderBy('distance_miles', 'asc')->paginate(10, ['*'], 'page', $page);
+        $totalProperties = $properties->total();
+
+        $properties->getCollection()->each(function ($property) {
+            $item = Item::where([
+                'model_type' => get_class($property),
+                'model_id' => $property->id,
+                'created_by_id' => auth()->id(),
+                'state_id' => Item::STATE_ACTIVE,
+            ])->first();
+
+            $property->is_favorite = $item ? true : false;
+        });
+
+        $propertiesWithDistances = $properties->items();
+
+        if ($properties->isNotEmpty()) {
+            return response()->json([
+                'property' => $propertiesWithDistances,
+                'meta_count' => [
+                    'total_count' => $totalProperties,
+                    'current_page' => $properties->currentPage(),
+                    'total_pages' => $properties->lastPage(),
+                ],
+                'message' => 'Nearby property list fetched successfully.'
+            ], 200);
+        } else {
+            return response()->json(['message' => 'No properties found.'], 404);
+        }
+    }
 
 
     /**
@@ -143,6 +265,7 @@ class PropertyController extends Controller
      *                  @OA\Property(property="bathrooms", type="integer", example=2),
      *                  @OA\Property(property="property_type", type="string", example="1"),
      *                  @OA\Property(property="adult", type="integer", example=2),
+     *                  @OA\Property(property="area", type="string", example="873"),
      *                  @OA\Property(property="children", type="integer", example=1),
      *                  @OA\Property(property="infants", type="integer", example=1),
      *                  @OA\Property(property="amenities_ids", type="array", @OA\Items(type="integer"), example={1, 2, 3}),
@@ -193,6 +316,7 @@ class PropertyController extends Controller
             'children' => 'required|integer',
             'infants' => 'required|integer',
             'town' => 'required|string',
+            'area' => 'required|string',
             'zipcode' => 'required|integer',
             'country' => 'required|string',
             // 'amenities_ids' => 'required|array',
@@ -238,6 +362,7 @@ class PropertyController extends Controller
                 'children' => $request->children,
                 'infants' => $request->infants,
                 'town' => $request->town,
+                'area' => $request->area,
                 'zipcode' => $request->zipcode,
                 'country' => $request->country,
                 'property_id_proof_1' => $idProof1Name,
@@ -326,7 +451,7 @@ class PropertyController extends Controller
     public function getPropertyDetail($id)
     {
         try {
-            $property = Property::with(['propertyAmenities.amenity', 'images'])->find($id);
+            $property = Property::with(['propertyAmenities.amenity', 'images', 'user'])->find($id);
 
             if (!$property) {
                 return response()->json(['message' => 'Property not found.'], 404);
@@ -357,6 +482,7 @@ class PropertyController extends Controller
                 'children' => $property->children,
                 'infants' => $property->infants,
                 'town' => $property->town,
+                'area' => $property->area,
                 'zipcode' => $property->zipcode,
                 'country' => $property->country,
                 'is_favorite' => $isFavorite,
@@ -365,7 +491,8 @@ class PropertyController extends Controller
                 'property_images_url' => $property->property_images_url,
                 'property_amanities_image' => $property->property_amanities_image,
                 'property_amenities' => $property->propertyAmenities,
-                'images' => $property->images
+                'images' => $property->images,
+                'user' => $property->user,
             ];
 
             return response()->json([
@@ -376,9 +503,6 @@ class PropertyController extends Controller
             return response()->json(['message' => 'Error fetching property details.', 'error' => $e->getMessage()], 500);
         }
     }
-
-
-
 
 
     /**
@@ -410,6 +534,7 @@ class PropertyController extends Controller
      *                  @OA\Property(property="bathrooms", type="integer", example=3),
      *                  @OA\Property(property="property_type", type="string", example="2"),
      *                  @OA\Property(property="adult", type="integer", example=2),
+     *                  @OA\Property(property="area", type="string", example="873 m"),
      *                  @OA\Property(property="children", type="integer", example=1),
      *                  @OA\Property(property="infants", type="integer", example=1),
      *                  @OA\Property(property="town", type="string", example= "canada"),
@@ -474,6 +599,7 @@ class PropertyController extends Controller
             'children' => 'nullable|integer',
             'infants' => 'nullable|integer',
             'town' => 'required|string',
+            'area' => 'required|string',
             'zipcode' => 'required|integer',
             'country' => 'required|string',
             'property_id_proof_1' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -504,6 +630,7 @@ class PropertyController extends Controller
                 'children' => $request->children ?? $property->children,
                 'infants' => $request->infants ?? $property->infants,
                 'town' => $request->town ?? $property->town,
+                'area' => $request->area ?? $property->area,
                 'zipcode' => $request->zipcode ?? $property->zipcode,
                 'country' => $request->country ?? $property->country,
             ]);
@@ -599,8 +726,7 @@ class PropertyController extends Controller
 
             if ($favourites->isNotEmpty()) {
                 $properties = Property::whereIn('id', $favourites->pluck('model_id'))->get();
-
-                return response()->json($properties, 200);
+                return response()->json(['message' => 'Favorite Listed successfully.', 'property' => $properties], 200);
             } else {
                 return response()->json([
                     'message' => 'No providers are in your favourites'
@@ -710,6 +836,89 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/property/deleteProperty/{id}",
+     *      operationId="deleteProperty",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      summary="Delete a property",
+     *      description="Delete a property with all associated data",
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          required=true,
+     *          description="ID of the property to delete",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Property deleted successfully.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property deleted successfully.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Property not found.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property not found.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Unauthorized to delete property.",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthorized to delete property.")
+     *          )
+     *      )
+     * )
+     */
+    public function deleteProperty($id)
+    {
+        if (auth()->user()->role != User::ROLE_SERVICE_PROVIDER) {
+            return response()->json(['message' => 'Unauthorized to delete property.'], 403);
+        }
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json(['message' => 'Property not found.'], 404);
+        }
+
+        if ($property->created_by_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized to delete this property.'], 403);
+        }
+
+        DB::beginTransaction();
+        try {
+            PropertyAmenity::where('property_id', $property->id)->delete();
+            PropertyImage::where('property_id', $property->id)->delete();
+
+            foreach ($property->images as $image) {
+                $imagePath = public_path('uploads/property/propertyImages/' . $image->image);
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            $proof1Path = public_path('uploads/property/propertyIds/' . $property->property_id_proof_1);
+            if (file_exists($proof1Path)) {
+                unlink($proof1Path);
+            }
+
+            $proof2Path = public_path('uploads/property/propertyIds/' . $property->property_id_proof_2);
+            if (file_exists($proof2Path)) {
+                unlink($proof2Path);
+            }
+            $property->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Property deleted successfully.'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error deleting property.', 'error' => $e->getMessage()], 500);
         }
     }
 }

@@ -125,9 +125,17 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'list'
         ]);
+        Route::get('/nearby', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'nearbyProperties'
+        ]);
         Route::get('/getPropertyDetail/{id}', [
             \App\Http\Controllers\API\PropertyController::class,
             'getPropertyDetail'
+        ]);
+        Route::delete('/deleteProperty/{id}', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'deleteProperty'
         ]);
     });
 });

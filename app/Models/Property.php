@@ -18,6 +18,11 @@ class Property extends Model
 
     const PRICE_TYPE_FULL = 2;
 
+    // property state
+    const STATE_PENDING = 1;
+
+    const STATE_BOOKED = 2;
+
     // property type
     const PROPERTY_TYPE_HOUSE = 0;
 
@@ -53,6 +58,11 @@ class Property extends Model
     public function propertyAmenities()
     {
         return $this->hasMany(PropertyAmenity::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
     }
 
     public function images()

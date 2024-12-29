@@ -1450,6 +1450,95 @@
                 ]
             }
         },
+        "/property/nearby": {
+            "get": {
+                "tags": [
+                    "property"
+                ],
+                "operationId": "nearbyProperties",
+                "parameters": [
+                    {
+                        "name": "latitude",
+                        "in": "query",
+                        "description": "Latitude of the user's location",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 30.7046
+                        }
+                    },
+                    {
+                        "name": "longitude",
+                        "in": "query",
+                        "description": "Longitude of the user's location",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": -76.7179
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (default is 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Nearby Property List",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Property One"
+                                        },
+                                        "distance": {
+                                            "type": "string",
+                                            "example": "2.5 miles"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/property/properties": {
             "post": {
                 "tags": [
@@ -1543,6 +1632,10 @@
                                     "adult": {
                                         "type": "integer",
                                         "example": 2
+                                    },
+                                    "area": {
+                                        "type": "string",
+                                        "example": "873"
                                     },
                                     "children": {
                                         "type": "integer",
@@ -1865,6 +1958,10 @@
                                         "type": "integer",
                                         "example": 2
                                     },
+                                    "area": {
+                                        "type": "string",
+                                        "example": "873 m"
+                                    },
                                     "children": {
                                         "type": "integer",
                                         "example": 1
@@ -2100,6 +2197,82 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Validation error."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/deleteProperty/{id}": {
+            "delete": {
+                "tags": [
+                    "property"
+                ],
+                "summary": "Delete a property",
+                "description": "Delete a property with all associated data",
+                "operationId": "deleteProperty",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the property to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Property deleted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized to delete property.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized to delete property."
                                         }
                                     },
                                     "type": "object"
