@@ -482,6 +482,7 @@ class AuthController extends Controller
      *   @OA\Property(property="phone_number", type="numbrer", example="7018285882"),
      *   @OA\Property(property="first_name", type="string", example="arun"),
      *   @OA\Property(property="last_name", type="string", example="kumar"),
+     *   @OA\Property(property="bio", type="string", example="bio"),
      *   @OA\Property(property="country_code", type="string", example="91"),
      *   @OA\Property(property="country", type="number", example="india"),
      *   @OA\Property(property="dob", type="string", format="date", example="1988-01-01"),
@@ -514,6 +515,7 @@ class AuthController extends Controller
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'phone_number' => 'required|string',
+            'bio' => 'string',
         ]);
 
         if ($validator->fails()) {
@@ -539,6 +541,8 @@ class AuthController extends Controller
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
         $user->phone = $request->phone_number;
+        $user->bio = $request->bio;
+        $user->is_profile_setup = User::STATE_ACTIVE;
 
         if ($request->hasFile('profile_picture')) {
             $imageName = date('Ymd') . '_' . time() . '.' . $request->file('profile_picture')->getClientOriginalExtension();

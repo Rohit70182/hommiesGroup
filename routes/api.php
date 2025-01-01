@@ -124,6 +124,14 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'deleteProperty'
         ]);
+        Route::post('/storePropertyHistory', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'storePropertyHistory'
+        ]);
+        Route::post('/markAsUnsold', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'markAsUnsold'
+        ]);
     });
 });
 

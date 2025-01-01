@@ -22,7 +22,7 @@ class Property extends Model
     // property state
     const STATE_PENDING = 1;
 
-    const STATE_BOOKED = 2;
+    const STATE_SOLD = 2;
 
     // property type
     const PROPERTY_TYPE_HOUSE = 0;

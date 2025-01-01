@@ -7,6 +7,7 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use App\Models\Amenity; // If you need to validate or manipulate amenities
 use App\Models\PropertyAmenity;
+use App\Models\PropertyHistory;
 use App\Models\PropertyImage;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
@@ -708,7 +709,7 @@ class PropertyController extends Controller
                 'property_amenities' => $property->propertyAmenities,
                 // 'images' => $property->images,
                 'user' => $property->user,
-                'testimonials' => $property->testimonials, 
+                'testimonials' => $property->testimonials,
             ];
 
             return response()->json([
@@ -1135,6 +1136,186 @@ class PropertyController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error deleting property.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     *
+     * @OA\Post(
+     *      path="/property/storePropertyHistory",
+     *      operationId="storePropertyHistory",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      summary="Store property history for the given property and user",
+     *      description="Stores a record in the property history table with the given to_user, property_id, and message.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="application/x-www-form-urlencoded",
+     *              @OA\Schema(
+     *                  type="object",
+     *                  required={"to_user", "property_id"},
+     *                  @OA\Property(property="to_user", type="integer", example=2),
+     *                  @OA\Property(property="property_id", type="integer", example=101),
+     *                  @OA\Property(property="message", type="string", example="Property sold to this user.")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Property history saved successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property history saved successfully.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Invalid input",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Invalid input data.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Something went wrong")
+     *          )
+     *      )
+     * )
+     */
+    public function storePropertyHistory(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'to_user' => 'required|integer',
+                'property_id' => 'required|integer',
+                'message' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Invalid input data.',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+            $property_id = $request->input('property_id');
+            $property = Property::where([
+                ['state_id', '=', Property::STATE_PENDING],
+                ['id', '=', $property_id]
+            ])->first();
+
+            if ($property) {
+                $property->state_id = Property::STATE_SOLD;
+                $property->sold_to = $request->input('to_user');
+                $property->save();
+            } else {
+                return response()->json([
+                    'message' => 'Property not found.'
+                ], 404);
+            }
+
+            $propertyHistory = new PropertyHistory();
+            $propertyHistory->property_id = $request->input('property_id');
+            $propertyHistory->to_user = $request->input('to_user');
+            $propertyHistory->state_id = PropertyHistory::STATE_ACTIVE;
+            $propertyHistory->message = $request->input('message');
+            $propertyHistory->save();
+
+            return response()->json([
+                'message' => 'Property history saved and property updated successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/property/markAsUnsold",
+     *      operationId="markAsUnsold",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      summary="Mark a property as unsold",
+     *      description="Marks a property as unsold by updating its state_id and removing the sold_to information.",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="application/x-www-form-urlencoded",
+     *              @OA\Schema(
+     *                  type="object",
+     *                  required={"property_id"},
+     *                  @OA\Property(property="property_id", type="integer", example=101)
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Property marked as unsold successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property marked as unsold successfully.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Property not found or is not in sold state",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Property not found or is not sold.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Something went wrong")
+     *          )
+     *      )
+     * )
+     */
+
+    public function markAsUnsold(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'property_id' => 'required|integer|exists:properties,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Invalid input data.',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            $property_id = $request->input('property_id');
+
+            $property = Property::where([
+                ['id', '=', $property_id],
+                ['state_id', '=', Property::STATE_SOLD]
+            ])->first();
+
+            if ($property) {
+                $property->state_id = Property::STATE_PENDING;
+                $property->sold_to = null;
+
+                $property->save();
+
+                return response()->json([
+                    'message' => 'Property marked as unsold successfully.'
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Property not found or is not sold.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -57,6 +57,7 @@ class User extends Authenticatable
         'dob',
         'phone',
         'address',
+        'bio',
         'role',
         'country_code',
         'otp',

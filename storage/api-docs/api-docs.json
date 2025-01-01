@@ -557,6 +557,10 @@
                                         "type": "string",
                                         "example": "kumar"
                                     },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "bio"
+                                    },
                                     "country_code": {
                                         "type": "string",
                                         "example": "91"
@@ -2241,6 +2245,183 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Unauthorized to delete property."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/storePropertyHistory": {
+            "post": {
+                "tags": [
+                    "property"
+                ],
+                "summary": "Store property history for the given property and user",
+                "description": "Stores a record in the property history table with the given to_user, property_id, and message.",
+                "operationId": "storePropertyHistory",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "to_user",
+                                    "property_id"
+                                ],
+                                "properties": {
+                                    "to_user": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Property sold to this user."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Property history saved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property history saved successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input data."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/markAsUnsold": {
+            "post": {
+                "tags": [
+                    "property"
+                ],
+                "summary": "Mark a property as unsold",
+                "description": "Marks a property as unsold by updating its state_id and removing the sold_to information.",
+                "operationId": "markAsUnsold",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "required": [
+                                    "property_id"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 101
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Property marked as unsold successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property marked as unsold successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found or is not in sold state",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Property not found or is not sold."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
                                         }
                                     },
                                     "type": "object"
