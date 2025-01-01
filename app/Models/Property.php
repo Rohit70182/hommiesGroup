@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Rating\Entities\Rating;
 
 class Property extends Model
 {
@@ -30,7 +31,7 @@ class Property extends Model
 
     const PROPERTY_TYPE_APPARTMENT = 2;
 
-    public $appends = ['property_id_proof_1_url', 'property_id_proof_2_url', 'property_images_url', 'property_amanities_image'];
+    public $appends = ['property_id_proof_1_url', 'property_id_proof_2_url', 'property_images_url', 'property_amanities_image', 'testimonials'];
 
     protected $fillable = [
         'name',
@@ -99,5 +100,11 @@ class Property extends Model
         return $this->propertyAmenities->map(function ($amenity) {
             return $amenity->amenity ? asset('public/assets/amanities/' . $amenity->amenity->image) : null;
         });
+    }
+    public function getTestimonialsAttribute()
+    {
+        return Rating::where('model_id', $this->id)
+            ->where('model_type', get_class($this))
+            ->get();
     }
 }

@@ -32,13 +32,103 @@ class PropertyController extends Controller
      *          )
      *      ),
      *      @OA\Parameter(
-     *          name="page",
+     *          name="min_price",
      *          in="query",
      *          required=false,
-     *          description="Page number for pagination (default is 1)",
+     *          description="Minimum price of property",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=100
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="max_price",
+     *          in="query",
+     *          required=false,
+     *          description="Maximum price of property",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=500
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="property_type",
+     *          in="query",
+     *          required=false,
+     *          description="Property type",
      *          @OA\Schema(
      *              type="integer",
      *              example=1
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="no_of_rooms",
+     *          in="query",
+     *          required=false,
+     *          description="Number of Rooms",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=3
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="bathroom",
+     *          in="query",
+     *          required=false,
+     *          description="Number of bathrooms",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=2
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="beds",
+     *          in="query",
+     *          required=false,
+     *          description="Number of beds",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=4
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="adults",
+     *          in="query",
+     *          required=false,
+     *          description="Number of adults",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=2
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="children",
+     *          in="query",
+     *          required=false,
+     *          description="Number of children",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="infants",
+     *          in="query",
+     *          required=false,
+     *          description="Number of infants",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="property_amenity",
+     *          in="query",
+     *          required=false,
+     *          description="Property amenities (comma-separated values)",
+     *          @OA\Schema(
+     *              type="string",
+     *              example="1,2"
      *          )
      *      ),
      *      @OA\Response(
@@ -66,7 +156,19 @@ class PropertyController extends Controller
 
         $page = $request->get('page', 1);
         $search = $request->get('search', '');
+        $minPrice = $request->get('min_price', null);
+        $maxPrice = $request->get('max_price', null);
+        $propertyType = $request->get('property_type', null);
+        $bedroom = $request->get('no_of_rooms', null);
+        $bathroom = $request->get('bathroom', null);
+        $beds = $request->get('beds', null);
+        $adults = $request->get('adults', null);
+        $children = $request->get('children', null);
+        $infants = $request->get('infants', null);
+        $propertyAmenity = $request->get('property_amenity', null);
+
         $propertiesQuery = Property::query();
+
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
             $propertiesQuery->where('created_by_id', auth()->id());
         }
@@ -78,6 +180,49 @@ class PropertyController extends Controller
                     ->orWhere('town', 'like', '%' . $search . '%')
                     ->orWhere('country', 'like', '%' . $search . '%')
                     ->orWhere('zipcode', 'like', '%' . $search . '%');
+            });
+        }
+
+        if (!is_null($minPrice)) {
+            $propertiesQuery->where('price', '>=', $minPrice);
+        }
+
+        if (!is_null($maxPrice)) {
+            $propertiesQuery->where('price', '<=', $maxPrice);
+        }
+
+        if (!is_null($propertyType)) {
+            $propertiesQuery->where('property_type', $propertyType);
+        }
+
+        if (!is_null($bedroom)) {
+            $propertiesQuery->where('no_of_rooms', '>=', $bedroom);
+        }
+
+        if (!is_null($bathroom)) {
+            $propertiesQuery->where('bathrooms', '>=', $bathroom);
+        }
+
+        if (!is_null($beds)) {
+            $propertiesQuery->where('no_of_beds', '>=', $beds);
+        }
+
+        if (!is_null($adults)) {
+            $propertiesQuery->where('adult', '>=', $adults);
+        }
+
+        if (!is_null($children)) {
+            $propertiesQuery->where('children', '>=', $children);
+        }
+
+        if (!is_null($infants)) {
+            $propertiesQuery->where('infants', '>=', $infants);
+        }
+
+        if (!empty($propertyAmenity)) {
+            $amenities = explode(',', $propertyAmenity);
+            $propertiesQuery->whereHas('propertyAmenities', function ($query) use ($amenities) {
+                $query->whereIn('id', $amenities);
             });
         }
 
@@ -93,6 +238,7 @@ class PropertyController extends Controller
             ])->first();
             $property->is_favorite = $item ? true : false;
         });
+
         $meta_count = [
             'total_count' => $totalProperties,
             'current_page' => $properties->currentPage(),
@@ -109,6 +255,75 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No properties found.'], 404);
         }
     }
+    /**
+     * @OA\Get(
+     *      path="/property/listByRating",
+     *      operationId="listByRating",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Property List by Rating",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example="1"),
+     *              @OA\Property(property="name", type="string", example="Property One"),
+     *              @OA\Property(property="rating", type="number", format="float", example=4.5),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Not Found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Something went wrong"),
+     *          )
+     *      ),
+     * )
+     */
+    public function listByRating(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'User is not authenticated.'], 401);
+        }
+
+        $page = $request->get('page', 1);
+        $propertiesQuery = Property::query();
+        if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
+            $propertiesQuery->where('created_by_id', auth()->id());
+        }
+
+        $propertiesQuery->orderBy('rating', 'desc');
+
+        $properties = $propertiesQuery->paginate(10, ['*'], 'page', $page);
+        $totalProperties = $properties->total();
+
+        $properties->getCollection()->each(function ($property) {
+            $item = Item::where([
+                'model_type' => get_class($property),
+                'model_id' => $property->id,
+                'created_by_id' => auth()->id(),
+                'state_id' => Item::STATE_ACTIVE,
+            ])->first();
+            $property->is_favorite = $item ? true : false;
+        });
+
+        $meta_count = [
+            'total_count' => $totalProperties,
+            'current_page' => $properties->currentPage(),
+            'total_pages' => $properties->lastPage(),
+        ];
+
+        if ($properties->isNotEmpty()) {
+            return response()->json([
+                'property' => $properties->items(),
+                'meta_count' => $meta_count,
+                'message' => 'Property list sorted by rating fetched successfully.'
+            ], 200);
+        } else {
+            return response()->json(['message' => 'No properties found.'], 404);
+        }
+    }
+
+
 
     /**
      * @OA\Get(
@@ -493,6 +708,7 @@ class PropertyController extends Controller
                 'property_amenities' => $property->propertyAmenities,
                 // 'images' => $property->images,
                 'user' => $property->user,
+                'testimonials' => $property->testimonials, 
             ];
 
             return response()->json([

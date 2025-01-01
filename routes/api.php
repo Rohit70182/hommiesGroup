@@ -112,6 +112,10 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'nearbyProperties'
         ]);
+        Route::get('/listByRating', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'listByRating'
+        ]);
         Route::get('/getPropertyDetail/{id}', [
             \App\Http\Controllers\API\PropertyController::class,
             'getPropertyDetail'
@@ -151,6 +155,19 @@ Route::prefix('chats')->group(function () {
         Route::get('/load-new-messages', [
             \App\Http\Controllers\API\ChatsController::class,
             'loadNewMessages'
+        ]);
+    });
+});
+
+Route::prefix('rating')->group(function () {
+    Route::group([
+        'middleware' => [
+            'auth:sanctum'
+        ]
+    ], function () {
+        Route::post('/storeRating', [
+            \App\Http\Controllers\API\RatingController::class,
+            'storeRating'
         ]);
     });
 });

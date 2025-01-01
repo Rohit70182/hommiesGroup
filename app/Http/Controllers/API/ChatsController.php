@@ -120,7 +120,7 @@ class ChatsController extends Controller
         if ($chat->save()) {
             return response([
                 'message' => 'Success, Message sent successfully',
-                'detail' => $chat
+                'chat' => $chat
             ], 200);
         } else {
             return response([
@@ -216,7 +216,7 @@ class ChatsController extends Controller
             ]);
 
         return response([
-            'list' => $chat,
+            'chat' => $chat,
             'message' => 'Chats loaded successfully'
         ], 200);
     }
@@ -271,31 +271,30 @@ class ChatsController extends Controller
      */
     public function chatList(Request $request)
     {
-        $chats = Chat::query();
-
-        $chats = $chats->where('from_id', Auth::id())
-            ->orWhere('to_id', Auth::id())->get();
+        $chats = Chat::query()
+            ->where('from_id', Auth::id())
+            ->orWhere('to_id', Auth::id())
+            ->get();
 
         $ids = [];
-        foreach ($chats as $chat) {
 
+        foreach ($chats as $chat) {
             if ($chat->from_id != Auth::id()) {
-                array_push($ids, $chat->from_id);
+                $ids[] = $chat->from_id;
             }
             if ($chat->to_id != Auth::id()) {
-                array_push($ids, $chat->to_id);
+                $ids[] = $chat->to_id;
             }
         }
+
         $ids = array_unique($ids);
 
-        foreach ($ids as $user) {
-            $users[] = User::where('id', $user)->get();
-        }
+        $users = User::whereIn('id', $ids)->get();
 
-        if ($chat) {
+        if ($users->isNotEmpty()) {
             return response([
-                'list' => $users,
-                'message' => 'chats list'
+                'chat' => $users,
+                'message' => 'Chats list'
             ], 200);
         } else {
             return response([
@@ -375,7 +374,7 @@ class ChatsController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'No new messages found',
-                'new_messages' => []
+                'chat' => []
             ], 200);
         }
 
@@ -393,7 +392,7 @@ class ChatsController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'New messages found',
-            'new_messages' => $newMessages
+            'chat' => $newMessages
         ], 200);
     }
 }
