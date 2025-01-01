@@ -118,6 +118,7 @@ class ChatsController extends Controller
         }
 
         if ($chat->save()) {
+            $chat->load('fromId', 'toId');
             return response([
                 'message' => 'Success, Message sent successfully',
                 'chat' => $chat
@@ -298,6 +299,7 @@ class ChatsController extends Controller
             ], 200);
         } else {
             return response([
+                'chat' => [],
                 'message' => 'Not found'
             ], 400);
         }
@@ -369,6 +371,7 @@ class ChatsController extends Controller
             ->where('to_id', $authUserId)
             ->where('is_read', Chat::READ_NO)
             ->orderBy('created_at', 'asc')
+            ->with('fromId', 'toId')
             ->get();
         if ($newMessages->isEmpty()) {
             return response()->json([

@@ -36,8 +36,9 @@ class Chat extends Model
 
     public function toId()
     {
-        return $this->belongsTo('App\Models\User', 'to_id', 'id');
+        return $this->belongsTo('App\Models\User', 'to_id', $this->id);
     }
+    
 
     public function getCreatedDetailAttribute()
     {
@@ -51,6 +52,6 @@ class Chat extends Model
 
     public function fromId()
     {
-        return $this->belongsTo('App\Models\User', 'from_id', 'id');
+        return $this->belongsTo('App\Models\User', 'from_id', $this->id);
     }
 }
