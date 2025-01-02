@@ -4,7 +4,7 @@
        <ul>
 
          <li>
-           <p>©Copyright <a href="{{url('/dashboard')}}">demo-service</a> | All Rights Reserved
+           <p>©Copyright <a href="{{url('/dashboard')}}">Hommies Group</a> | All Rights Reserved
           
 <!--            <a href="javascript:void(0);">Terms &amp; Conditions</a> |  -->
 <!--            <a href="javascript:void(0);">Privacy Policy</a> -->

@@ -63,15 +63,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/myprofile/edit/{id}', [UserProfileController::class, 'edit']);
         Route::put('/myprofile/update/{id}', [UserProfileController::class, 'update']);
         //Users
-        Route::get('/users', [UserActivityController::class, 'users']);
-        Route::get('/user/add', [UserController::class, 'add']);
-        Route::view('user/add', 'dashboard.user-management.adduser');
-        Route::post('/user/add', [UserController::class, 'addUser']);
+        Route::get('/users', [UserController::class, 'users']);
+        // Route::get('/user/add', [UserController::class, 'add']);
+        // Route::view('user/add', 'dashboard.user-management.adduser');
+        // Route::post('/user/add', [UserController::class, 'addUser']);
         Route::get('/users/delete/{id}', [UserController::class, 'delete']);
         Route::get('/users/softDelete/{id}', [UserController::class, 'softDelete']);
         Route::get('/users/edit/{id}', [UserController::class, 'edit']);
         Route::put('/users/update/{id}', [UserController::class, 'update']);
         Route::get('/users/show/{id}', [UserController::class, 'show']);
+
+        //Service Provider
+        Route::get('/service', [UserController::class, 'serviceProviders']);
+        // Route::get('/service/add', [UserController::class, 'add']);
+        // Route::view('service/add', 'dashboard.user-management.adduser');
+        // Route::post('/service/add', [UserController::class, 'addUser']);
+        Route::get('/service/delete/{id}', [UserController::class, 'serviceDelete']);
+        Route::get('/service/softDelete/{id}', [UserController::class, 'serviceSoftDelete']);
+        Route::get('/service/edit/{id}', [UserController::class, 'serviceEdit']);
+        Route::put('/service/update/{id}', [UserController::class, 'serviceUpdate']);
+        Route::get('/service/show/{id}', [UserController::class, 'serviceShow']);
+
     });
 
 
@@ -87,7 +99,7 @@ Route::middleware('auth')->group(function () {
         Route::get('cancel-reasons/create', [DashboardController::class, 'createcancelReasons'])->name('createreason');
         Route::post('cancel-reasons/save', [DashboardController::class, 'storecancelReasons'])->name('storereason');
         Route::get('orders', [DashboardController::class, 'orders'])->name('orders');
-        Route::get('orders/show/{id}', [DashboardController::class, 'showOrders'])->name('order.show');
+        // Route::get('orders/show/{id}', [DashboardController::class, 'showOrders'])->name('order.show');
         
         //Files
         Route::get('files', [DashboardController::class, 'Showfiles']);

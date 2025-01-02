@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -14,8 +15,14 @@ class UserController extends Controller
 
     public function users()
     {
-        $count = User::where('role', '!=', User::ROLE_ADMIN)->paginate(8);
+        $count = User::where('role', '=', User::ROLE_USER)->paginate(8);
         return view('dashboard.user-management.users', compact('count'));
+    }
+
+    public function serviceProviders()
+    {
+        $count = User::where('role', '=', User::ROLE_SERVICE_PROVIDER)->paginate(8);
+        return view('dashboard.service-provider.users', compact('count'));
     }
 
     public function show($id)
@@ -23,6 +30,13 @@ class UserController extends Controller
         $show = User::where('id', $id)->first();
 
         return view('dashboard.user-management.show', compact('show'));
+    }
+
+    public function serviceShow($id)
+    {
+        $show = User::where('id', $id)->first();
+
+        return view('dashboard.service-provider.show', compact('show'));
     }
 
     /*
@@ -42,31 +56,57 @@ class UserController extends Controller
             return redirect()->back()->with($e->getMessage());
         }
     }
-    
+
+    public function serviceDelete($id)
+    {
+        try {
+            $user = User::where('id', $id)->first();
+            if (! empty($user)) {
+                $user->delete();
+                return redirect('/dashboard/service')->with('success', 'Service Provider deleted successfully.');
+            } else {
+                return redirect()->back()->with('error', "Account not found");
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with($e->getMessage());
+        }
+    }
+
     public function softDelete($id)
     {
-        
-        try 
-        {
+        try {
             $user = User::where('id', $id)->first();
-            
-            if($user->state_id == User::STATE_INACTIVE)
-            {
+
+            if ($user->state_id == User::STATE_INACTIVE) {
                 $user->state_id = User::STATE_ACTIVE;
                 $user->save();
                 return redirect()->back();
-//                 return redirect()->back()->with('error', "Account not found");
-            }
-            else
-            {
+            } else {
                 $user->state_id = User::STATE_INACTIVE;
                 $user->save();
                 return redirect()->back();
-//                 return redirect()->back()->with('error', "Account not found");
             }
-        } 
-        catch (\Exception $e) 
-        {
+        } catch (\Exception $e) {
+            return redirect()->back()->with($e->getMessage());
+        }
+    }
+
+    // Service provider soft delete 
+    public function serviceSoftDelete($id)
+    {
+        try {
+            $user = User::where('id', $id)->first();
+
+            if ($user->state_id == User::STATE_INACTIVE) {
+                $user->state_id = User::STATE_ACTIVE;
+                $user->save();
+                return redirect()->back();
+            } else {
+                $user->state_id = User::STATE_INACTIVE;
+                $user->save();
+                return redirect()->back();
+            }
+        } catch (\Exception $e) {
             return redirect()->back()->with($e->getMessage());
         }
     }
@@ -133,27 +173,34 @@ class UserController extends Controller
         $GetData = User::find($id);
         return view('dashboard.user-management.update', compact('GetData'));
     }
+    
+    public function serviceEdit($id)
+    {
+        $GetData = User::find($id);
+        return view('dashboard.service-provider.update', compact('GetData'));
+    }
 
     /*
      * Update
      */
     public function update(Request $request, $id)
     {
-        $validator = validator($request->all(), 
+        $validator = validator(
+            $request->all(),
             [
-            'name' => 'required|string',
-            'dob' => 'before:today',    // Doesn't accept today date
-            'address' => 'required|string',
-            'phone' =>  'required|min:10|max:15',
-//             'image' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048'
-            
-        ]);
-        if ($validator->fails()) 
-        {
-           
+                'name' => 'required|string',
+                'dob' => 'before:today',    // Doesn't accept today date
+                'address' => 'required|string',
+                'phone' =>  'required|min:10|max:15',
+                //             'image' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048'
+
+            ]
+        );
+        if ($validator->fails()) {
+
             return Redirect::back()->withInput()->withErrors($validator);
         }
-         
+
         try {
             $user = User::find($id);
             $user->name = $request->input('name');
@@ -170,14 +217,14 @@ class UserController extends Controller
             }
 
             if ($user->save()) {
-               
+
                 return redirect('/dashboard/users')->with('success', "Account Updated Successfully");
             } else {
-             
+
                 return redirect()->back()->with('error', "Something went wrong");
             }
         } catch (\Exception $e) {
-//             dd($e->getMessage());
+            //             dd($e->getMessage());
             return redirect()->back()->with($e->getMessage());
         }
     }
@@ -190,7 +237,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'Something went wrong!');
         }
     }
-    
+
     public function updateUserPassword(Request $request, $token)
     {
         $rules = array(
@@ -215,5 +262,4 @@ class UserController extends Controller
             }
         }
     }
-    
 }

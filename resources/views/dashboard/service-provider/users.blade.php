@@ -4,7 +4,7 @@
 <div class="mb-1 mt-2">
   <ul class="breadcrumb">
     <li><a href="{{url('/dashboard')}}">Home</a></li>
-    <li class="active">Users</li>
+    <li class="active">Service Providers</li>
   </ul>
 </div>
 
@@ -14,7 +14,7 @@
     <div class="col-12">
     <div class="page-head-text">
           <div class="ProfileHader d-flex flex-wrap align-items-center">
-            <h3 class="font_600 font-18 font-md-20 mr-auto pr-20">Users</h3>
+            <h3 class="font_600 font-18 font-md-20 mr-auto pr-20">Service Providers</h3>
 <!--             <a class="btn btn-bg" href="{{ url('/dashboard/user/add') }}"> -->
 <!--               <i class="fa fa-plus mr-1"></i>Add User -->
 <!--             </a> -->
@@ -45,9 +45,9 @@
                 <td>{{$users->getRole()}}</td>
                 <td> {{$users->getState()}}</td>
                 <td>
-                <a href="{{url('/dashboard/users/show/'.$users->id)}}" title="view" class="btn-success btn " data-method="view" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-eye"></i></a>
-                <!-- <a href="{{url('dashboard/users/edit/'.$users->id)}}" title="edit" class="btn btn-bg" data-method="Edit" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-pencil"></i></a> -->
-                <a href="{{url('dashboard/users/softDelete/'.$users->id)}}" onclick="return confirm('Are you sure to change its state ?')" title="change state" class=" btn-danger btn" data-method="DELETE" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-trash"></i></a>
+                <a href="{{url('/dashboard/service/show/'.$users->id)}}" title="view" class="btn-success btn " data-method="view" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-eye"></i></a>
+                <!-- <a href="{{url('dashboard/service/edit/'.$users->id)}}" title="edit" class="btn btn-bg" data-method="Edit" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-pencil"></i></a> -->
+                <a href="{{url('dashboard/service/softDelete/'.$users->id)}}" onclick="return confirm('Are you sure to change its state ?')" title="change state" class=" btn-danger btn" data-method="DELETE" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-trash"></i></a>
                 </td>
               </tr>
               @endforeach

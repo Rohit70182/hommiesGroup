@@ -4,7 +4,7 @@
 <div class="mb-1 mt-2">
 	<ul class="breadcrumb">
 		<li><a href="{{url('/dashboard')}}">Home</a></li>
-		<li class="active">User</li>
+		<li class="active">Service Provider</li>
 	</ul>
 </div>
 
@@ -18,9 +18,9 @@
 					<div class="float-right">
 					</div>
 					<div class="float-right">
-						<!-- <a href="{{url('dashboard/users/edit/'.$show->id)}}" title="edit users" class="btn btn-bg" data-method="Edit" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-pencil"></i></a> -->
-						<a href="{{url('dashboard/users/delete/'.$show->id)}}" onclick="return confirm('Are you sure to delete this user ?')" title="delete user" class=" btn-danger btn" data-method="DELETE" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-trash"></i></a>
-						<a class="btn btn-bg ml-1" href="{{url('dashboard/users')}}"> Back</a>
+						<!-- <a href="{{url('dashboard/service/edit/'.$show->id)}}" title="edit service provider" class="btn btn-bg" data-method="Edit" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-pencil"></i></a> -->
+						<a href="{{url('dashboard/service/delete/'.$show->id)}}" onclick="return confirm('Are you sure to delete this service provider ?')" title="delete service provider" class=" btn-danger btn" data-method="DELETE" data-trigger-confirm="1" data-pjax-target="#user-grid"><i class="fa fa-trash"></i></a>
+						<a class="btn btn-bg ml-1" href="{{url('dashboard/service')}}"> Back</a>
 
 					</div>
 				</div>

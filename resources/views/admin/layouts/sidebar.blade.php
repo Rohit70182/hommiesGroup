@@ -16,27 +16,31 @@
             </svg> <span>Dashboard</span></a>
         </li>
         @if (Auth::user() && Auth::user()->role == App\Models\User::ROLE_ADMIN)
-        
-          <li class="nav-item">
-          	<a class="nav-link" data-toggle="collapse" href="#user" role="button" aria-expanded="false" aria-controls="manage">
-          <i class="fa fa-user"></i><span>User Management</span>
+
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="collapse" href="#user" role="button" aria-expanded="false" aria-controls="manage">
+            <i class="fa fa-user"></i><span>User Management</span>
           </a>
-         
+
           <div class="collapse" id="user" data-parent="#accordion">
             <ul class="sub-navbar-nav">
 
-                     <li class="nav-item">
-                  <a class="nav-link" href="{{ url('/dashboard/users') }}"><i class="fa fa-users"></i> <span>Users</span></a>
-                </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url('/dashboard/users') }}"><i class="fa fa-users"></i> <span>Users</span></a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url('/dashboard/service') }}"><i class="fa fa-users"></i> <span>Service Provider</span></a>
+              </li>
 
             </ul>
           </div>
 
         </li>
-        
+
         <li class="nav-item">
           <a class="nav-link" data-toggle="collapse" href="#manage" role="button" aria-expanded="false" aria-controls="manage">
-          <i class="fa fa-tasks"></i><span>Manage</span>
+            <i class="fa fa-tasks"></i><span>Manage</span>
           </a>
           <div class="collapse" id="manage" data-parent="#accordion">
             <ul class="sub-navbar-nav">
@@ -59,7 +63,7 @@
           </div>
 
         </li>
-        
+
         <li class="nav-item menu-list " data-id="page_management">
           <a class="nav-link" data-toggle="collapse" href="#page" role="button" aria-expanded="false" aria-controls="page">
             <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" class="side-menu__icon" viewBox="0 0 24 24">
@@ -95,95 +99,13 @@
             </ul>
           </div>
         </li>
-
-		<li class="nav-item menu-list" data-id="seo"><a class="nav-link"
-			data-toggle="collapse" href="#seo" role="button"
-			aria-expanded="false" aria-controls="seo"> <i class="fas fa-key"></i>
-				<span>SEO Manager</span>
-				</a>
-				<div class="collapse" id="seo" data-parent="#accordion">
-					<ul class="sub-navbar-nav">
-<!-- 					<li class="nav-item"><a class="nav-link menu-list-link" -->
-<!-- 						href="{{ url('seo/')}}"><i class="fas fa-home"></i> <span>Home</span></a> -->
-<!-- 					</li> -->
-					<li class="nav-item"><a class="nav-link menu-list-link"
-						href="{{ url('seo/manager')}}"><i class="fas fa-fire"></i> <span>Meta</span></a>
-					</li>
-					<li class="nav-item"><a class="nav-link menu-list-link"
-						href="{{ url('seo/analytics')}}"><i class="fa fa-analytics"></i> <span>Analytics</span></a>
-					</li>
-					<li class="nav-item"><a class="nav-link menu-list-link"
-						href="{{ url('seo/redirect')}}"><i class="fas fa-external-link"></i> <span>Redirect</span></a>
-					</li>
-						</ul>
-				</div>
-				</li>
-
-				<li class="nav-item">
-          <a class="nav-link" href="{{ url('/serviceProvider') }}"><i class="fas fa-user-cog"></i> <span>Service Providers</span></a>
-        </li>
-
-        <li class="nav-item menu-list" data-id="services">
-          <a class="nav-link" data-toggle="collapse" href="#services" role="button" aria-expanded="false" aria-controls="services">
-          <i class="far fa-cogs"></i><span>Services</span>
-          </a>
-
-          <div class="collapse" id="services" data-parent="#accordion">
-            <ul class="sub-navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('/services')}}"><i class="fal fa-tasks"></i> <span>Service Management</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('services/category')}}"><i class="fal fa-list-alt"></i> <span>Category</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('services/sub-category')}}"><i class="fal fa-tasks"></i> <span>Sub-Category</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('services/add-on')}}"><i class="fa fa-plus"></i> <span>Add on services</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('/services/custom-req')}}"><i class="fa fa-search"></i> <span>Custom Requests</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link menu-list-link" href="{{ url('services/coupon')}}"><i class="fal fa-star "></i> <span>Coupons</span></a>
-              </li>
-
-            </ul>
-          </div>
-        </li>
-
         <li class="nav-item">
-          <a class="nav-link" href="{{ url('/event/list') }}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" viewBox="0 0 24 24">
-              <path d="M0 0h24v24H0V0z" fill="none"></path>
-              <path d="M5 5h15v3H5zm12 5h3v9h-3zm-7 0h5v9h-5zm-5 0h3v9H5z" opacity=".3"></path>
-              <path d="M20 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 19H5v-9h3v9zm7 0h-5v-9h5v9zm5 0h-3v-9h3v9zm0-11H5V5h15v3z"></path>
-            </svg> <span>Events</span></a>
-        </li>
-         <li class="nav-item">
           <a class="nav-link" href="{{ url('/notifications') }}"><i class="fas fa-bell"></i> <span>Notifications</span></a>
         </li>
-	 
-       <li class="nav-item">
-          <a class="nav-link" href="{{ route('orders') }}"><i class="fa fa-ticket"></i> <span>Orders</span></a>
-        </li>
-		<li class="nav-item">
-          <a class="nav-link" href="{{ route('cancelReasons') }}"><i class="fas fa-comments"></i> <span>Cancel Reasons</span></a>
-        </li>
-
-
-		<div id="chat">
-			<li class="nav-item"><a class="nav-link" href="{{ url('/chat') }}">
-			<i class="fas fa-comments"></i> <span>Chats</span></a></li>
-		</div>
-
-
-		@endif
-
-			</ul>
+        @endif
+      </ul>
     </div>
     </li>
     </ul>
-</div>
-</nav>
+  </nav>
 </div>
