@@ -168,7 +168,7 @@ class PropertyController extends Controller
         $infants = $request->get('infants', null);
         $propertyAmenity = $request->get('property_amenity', null);
 
-        $propertiesQuery = Property::query();
+        $propertiesQuery = Property::query()->where('state_id', Property::STATE_PENDING);
 
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
             $propertiesQuery->where('created_by_id', auth()->id());
@@ -287,7 +287,7 @@ class PropertyController extends Controller
         }
 
         $page = $request->get('page', 1);
-        $propertiesQuery = Property::query();
+        $propertiesQuery = Property::query()->where('state_id', Property::STATE_PENDING);
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
             $propertiesQuery->where('created_by_id', auth()->id());
         }
@@ -335,7 +335,7 @@ class PropertyController extends Controller
      *      @OA\Parameter(
      *          name="latitude",
      *          in="query",
-     *          required=true,
+     *          required=false,
      *          description="Latitude of the user's location",
      *          @OA\Schema(
      *              type="number",
@@ -346,7 +346,7 @@ class PropertyController extends Controller
      *      @OA\Parameter(
      *          name="longitude",
      *          in="query",
-     *          required=true,
+     *          required=false,
      *          description="Longitude of the user's location",
      *          @OA\Schema(
      *              type="number",
@@ -393,10 +393,38 @@ class PropertyController extends Controller
         $page = $request->get('page', 1);
 
         if (!$latitude || !$longitude) {
-            return response()->json(['message' => 'Latitude and Longitude are required.'], 400);
+            $propertiesQuery = Property::query()->where('state_id', Property::STATE_PENDING);
+
+            if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
+                $propertiesQuery->where('created_by_id', auth()->id());
+            }
+
+            $properties = $propertiesQuery->paginate(10, ['*'], 'page', $page);
+            $totalProperties = $properties->total();
+
+            $properties->getCollection()->each(function ($property) {
+                $item = Item::where([
+                    'model_type' => get_class($property),
+                    'model_id' => $property->id,
+                    'created_by_id' => auth()->id(),
+                    'state_id' => Item::STATE_ACTIVE,
+                ])->first();
+
+                $property->is_favorite = $item ? true : false;
+            });
+
+            return response()->json([
+                'property' => $properties->items(),
+                'meta_count' => [
+                    'total_count' => $totalProperties,
+                    'current_page' => $properties->currentPage(),
+                    'total_pages' => $properties->lastPage(),
+                ],
+                'message' => 'Full property list fetched successfully.',
+            ], 200);
         }
 
-        $propertiesQuery = Property::query();
+        $propertiesQuery = Property::query()->where('state_id', Property::STATE_PENDING);
 
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
             $propertiesQuery->where('created_by_id', auth()->id());
@@ -415,7 +443,7 @@ class PropertyController extends Controller
             [$latitude, $longitude, $latitude, $latitude, $longitude, $latitude]
         );
 
-        $properties = $propertiesQuery->orderBy('distance_miles', 'asc')->paginate(10, ['*'], 'page', $page);
+        $properties = $propertiesQuery->orderBy('distance_in_miles', 'asc')->paginate(10, ['*'], 'page', $page);
         $totalProperties = $properties->total();
 
         $properties->getCollection()->each(function ($property) {
@@ -429,22 +457,17 @@ class PropertyController extends Controller
             $property->is_favorite = $item ? true : false;
         });
 
-        $propertiesWithDistances = $properties->items();
-
-        if ($properties->isNotEmpty()) {
-            return response()->json([
-                'property' => $propertiesWithDistances,
-                'meta_count' => [
-                    'total_count' => $totalProperties,
-                    'current_page' => $properties->currentPage(),
-                    'total_pages' => $properties->lastPage(),
-                ],
-                'message' => 'Nearby property list fetched successfully.'
-            ], 200);
-        } else {
-            return response()->json(['message' => 'No properties found.'], 404);
-        }
+        return response()->json([
+            'property' => $properties->items(),
+            'meta_count' => [
+                'total_count' => $totalProperties,
+                'current_page' => $properties->currentPage(),
+                'total_pages' => $properties->lastPage(),
+            ],
+            'message' => 'Nearby property list fetched successfully.',
+        ], 200);
     }
+
 
 
     /**

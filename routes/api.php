@@ -28,7 +28,7 @@ Route::prefix('user')->group(function () {
             \App\Http\Controllers\API\AuthController::class,
             'changePassword'
         ]);
-        Route::delete('/delete-account', [
+        Route::post('/delete-account', [
             \App\Http\Controllers\API\AuthController::class,
             'deleteUserAccount'
         ]);
@@ -36,24 +36,9 @@ Route::prefix('user')->group(function () {
             \App\Http\Controllers\API\AuthController::class,
             'logout'
         ]);
-        Route::post('/address/add', [
+        Route::get('/loadPage', [
             \App\Http\Controllers\API\AuthController::class,
-            'addAddress'
-        ]);
-
-        Route::get('/address-list', [
-            \App\Http\Controllers\API\AuthController::class,
-            'addressDetail'
-        ]);
-
-        Route::get('/address/delete', [
-            \App\Http\Controllers\API\AuthController::class,
-            'addressDelete'
-        ]);
-
-        Route::post('/address/update', [
-            \App\Http\Controllers\API\AuthController::class,
-            'addressUpdate'
+            'loadPage'
         ]);
     });
 });

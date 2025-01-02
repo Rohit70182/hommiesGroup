@@ -766,7 +766,7 @@
             }
         },
         "/user/delete-account": {
-            "delete": {
+            "post": {
                 "tags": [
                     "users"
                 ],
@@ -815,6 +815,67 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Failed to delete account"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/user/loadPage": {
+            "get": {
+                "tags": [
+                    "users"
+                ],
+                "summary": "Load page data based on page parameter",
+                "operationId": "loadPage",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Page data loaded successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Page",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No page found"
                                         }
                                     },
                                     "type": "object"
@@ -948,6 +1009,16 @@
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (default is 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -1433,7 +1504,7 @@
                         "name": "latitude",
                         "in": "query",
                         "description": "Latitude of the user's location",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "number",
                             "format": "float",
@@ -1444,7 +1515,7 @@
                         "name": "longitude",
                         "in": "query",
                         "description": "Longitude of the user's location",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "number",
                             "format": "float",

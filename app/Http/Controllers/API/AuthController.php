@@ -706,7 +706,7 @@ class AuthController extends Controller
 
 
     /**
-     * @OA\Delete(
+     * @OA\Post(
      * path="/user/delete-account",
      * summary="Delete User Account",
      * description="Delete the authenticated user's account",
@@ -752,5 +752,65 @@ class AuthController extends Controller
                 'message' => 'Failed to delete account'
             ], 500);
         }
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/user/loadPage",
+     *     operationId="loadPage",
+     *     tags={"users"},
+     *     security={{ "sanctum": {} }},
+     *     summary="Load page data based on page parameter",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Page data loaded successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid Page",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="No page found")
+     *         )
+     *     ),
+     * )
+     */
+    public function loadPage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            //'page' => 'required|integer|exists:pages,id',
+            'page' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                'status' => 422,
+                'message' => $validator->errors(),
+            ], 422);
+        }
+
+        $pageId = $request->get('page');
+        $page = Page::where('type_id', $pageId)->first();
+        if (!$page) {
+            return response([
+                'message' => 'No page found'
+            ], 400);
+        }
+        return response([
+            'page' => $page,
+            'message' => 'Page data loaded successfully'
+        ], 200);
     }
 }

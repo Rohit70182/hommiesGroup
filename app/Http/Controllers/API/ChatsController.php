@@ -146,7 +146,16 @@ class ChatsController extends Controller
      *           type="integer"
      *         ),
      *     ),
-     *
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          required=false,
+     *          description="Page number for pagination (default is 1)",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=1
+     *          )
+     *      ),
      * @OA\Response(
      *    response=200,
      *    description="Success",
@@ -174,7 +183,6 @@ class ChatsController extends Controller
     public function loadChat(Request $request)
     {
         $authUserId = Auth::id();
-
         $validator = validator($request->all(), [
             'user_id' => 'required|integer'
         ]);
@@ -187,7 +195,8 @@ class ChatsController extends Controller
         }
 
         $userId = $request->input('user_id');
-
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 15);
         $chat = Chat::where(function ($query) use ($userId, $authUserId) {
             $query->where('from_id', $userId)->where('to_id', $authUserId);
         })
@@ -196,7 +205,7 @@ class ChatsController extends Controller
             })
             ->with('fromId', 'toId')
             ->orderBy('id', 'DESC')
-            ->get();
+            ->paginate($perPage, ['*'], 'page', $page);
 
         if ($chat->isEmpty()) {
             return response([
@@ -217,7 +226,12 @@ class ChatsController extends Controller
             ]);
 
         return response([
-            'chat' => $chat,
+            'chat' => $chat->items(),
+            'meta_count' => [
+                'total_count' => $chat->total(),
+                'current_page' => $chat->currentPage(),
+                'total_pages' => $chat->lastPage(),
+            ],
             'message' => 'Chats loaded successfully'
         ], 200);
     }
