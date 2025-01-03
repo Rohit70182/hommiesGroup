@@ -602,6 +602,7 @@ class PropertyController extends Controller
                 'infants' => $request->infants,
                 'town' => $request->town,
                 'area' => $request->area,
+                'state_id' => Property::STATE_PENDING,
                 'zipcode' => $request->zipcode,
                 'country' => $request->country,
                 'property_id_proof_1' => $idProof1Name,
