@@ -2,6 +2,7 @@
 
 namespace Modules\Chat\Entities;
 
+use App\Models\Property;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
@@ -54,4 +55,9 @@ class Chat extends Model
     {
         return $this->belongsTo('App\Models\User', 'from_id', $this->id);
     }
+
+    // public function propertyId()
+    // {
+    //     return $this->belongsTo(Property::class, 'property_id', $this->property_id);
+    // }
 }

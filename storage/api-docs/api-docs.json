@@ -903,10 +903,16 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "to_id"
+                                    "to_id",
+                                    "property_id"
                                 ],
                                 "properties": {
                                     "to_id": {
+                                        "type": "string",
+                                        "format": "number",
+                                        "example": "1"
+                                    },
+                                    "property_id": {
                                         "type": "string",
                                         "format": "number",
                                         "example": "1"
@@ -2256,7 +2262,7 @@
             }
         },
         "/property/deleteProperty/{id}": {
-            "delete": {
+            "post": {
                 "tags": [
                     "property"
                 ],
@@ -2345,7 +2351,6 @@
                         "application/x-www-form-urlencoded": {
                             "schema": {
                                 "required": [
-                                    "to_user",
                                     "property_id"
                                 ],
                                 "properties": {
@@ -2360,6 +2365,10 @@
                                     "message": {
                                         "type": "string",
                                         "example": "Property sold to this user."
+                                    },
+                                    "sold_outside": {
+                                        "type": "integer",
+                                        "example": 0
                                     }
                                 },
                                 "type": "object"
@@ -2493,6 +2502,118 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/property/user-list": {
+            "get": {
+                "tags": [
+                    "property"
+                ],
+                "summary": "Fetch users associated with a property based on property_id",
+                "description": "Fetches a list of users involved in chats associated with a given property and filtered by role.",
+                "operationId": "getUserList",
+                "parameters": [
+                    {
+                        "name": "property_id",
+                        "in": "query",
+                        "description": "The ID of the property to filter users by",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 101
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "John Doe"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "john.doe@example.com"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "123456789"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "example": "2022-01-01T00:00:00.000000Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid property_id."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Property not found or no associated users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No users found for this property."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong."
                                         }
                                     },
                                     "type": "object"

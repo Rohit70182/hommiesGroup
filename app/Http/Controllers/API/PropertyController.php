@@ -12,6 +12,7 @@ use App\Models\PropertyImage;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Modules\Chat\Entities\Chat;
 use Modules\Favourite\Entities\Item;
 
 class PropertyController extends Controller
@@ -1164,7 +1165,6 @@ class PropertyController extends Controller
     }
 
     /**
-     *
      * @OA\Post(
      *      path="/property/storePropertyHistory",
      *      operationId="storePropertyHistory",
@@ -1178,10 +1178,11 @@ class PropertyController extends Controller
      *              mediaType="application/x-www-form-urlencoded",
      *              @OA\Schema(
      *                  type="object",
-     *                  required={"to_user", "property_id"},
+     *                  required={"property_id"},
      *                  @OA\Property(property="to_user", type="integer", example=2),
      *                  @OA\Property(property="property_id", type="integer", example=101),
-     *                  @OA\Property(property="message", type="string", example="Property sold to this user.")
+     *                  @OA\Property(property="message", type="string", example="Property sold to this user."),
+     *                  @OA\Property(property="sold_outside", type="integer", example=0)
      *              )
      *          )
      *      ),
@@ -1212,9 +1213,19 @@ class PropertyController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'to_user' => 'required|integer',
                 'property_id' => 'required|integer',
+                'to_user' => 'nullable|integer',
                 'message' => 'nullable|string',
+                'sold_outside' => [
+                    'nullable',
+                    'integer',
+                    'in:0,1',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if (!$request->has('to_user') && !$value) {
+                            return $fail('The ' . $attribute . ' field is required when to_user is not provided.');
+                        }
+                    }
+                ],
             ]);
 
             if ($validator->fails()) {
@@ -1223,10 +1234,12 @@ class PropertyController extends Controller
                     'errors' => $validator->errors()
                 ], 400);
             }
+
             $property_id = $request->input('property_id');
             $property = Property::where([
                 ['state_id', '=', Property::STATE_PENDING],
-                ['id', '=', $property_id]
+                ['id', '=', $property_id],
+                ['created_by_id', '=', auth()->id()],
             ])->first();
 
             if ($property) {
@@ -1244,6 +1257,7 @@ class PropertyController extends Controller
             $propertyHistory->to_user = $request->input('to_user');
             $propertyHistory->state_id = PropertyHistory::STATE_ACTIVE;
             $propertyHistory->message = $request->input('message');
+            $propertyHistory->sold_outside = $request->input('sold_outside');
             $propertyHistory->save();
 
             return response()->json([
@@ -1256,6 +1270,7 @@ class PropertyController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * @OA\Post(
@@ -1339,6 +1354,117 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => 'Something went wrong.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get users associated with a property and filtered by role.
+     *
+     * @OA\Get(
+     *      path="/property/user-list",
+     *      operationId="getUserList",
+     *      tags={"property"},
+     *      security={{ "sanctum": {} }},
+     *      summary="Fetch users associated with a property based on property_id",
+     *      description="Fetches a list of users involved in chats associated with a given property and filtered by role.",
+     *      @OA\Parameter(
+     *          name="property_id",
+     *          in="query",
+     *          required=true,
+     *          description="The ID of the property to filter users by",
+     *          @OA\Schema(
+     *              type="integer",
+     *              example=101
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="List of users fetched successfully",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="John Doe"),
+     *                  @OA\Property(property="email", type="string", example="john.doe@example.com"),
+     *                  @OA\Property(property="phone", type="string", example="123456789"),
+     *                  @OA\Property(property="created_at", type="string", example="2022-01-01T00:00:00.000000Z")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Invalid input",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Invalid property_id.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Property not found or no associated users",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="No users found for this property.")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Internal Server Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Something went wrong.")
+     *          )
+     *      )
+     * )
+     */
+    public function getUserList(Request $request)
+    {
+        // if (auth()->user()->role != User::ROLE_SERVICE_PROVIDER) {
+        //     return response()->json(['message' => 'Unauthorized. Only service providers can get user list.'], 403);
+        // }
+        try {
+            $validator = Validator::make($request->all(), [
+                'property_id' => 'required|integer|exists:properties,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Invalid property_id.',
+                    'errors' => $validator->errors(),
+                ], 400);
+            }
+
+            $propertyId = $request->input('property_id');
+            $property = Property::where('id', $propertyId)->first();
+            if (empty($property)) {
+                return response()->json(['message' => 'Property Not Found'], 404);
+            }
+            $chats = Chat::where('property_id', $propertyId)
+                ->where(function ($query) {
+                    $query->where('to_id', auth()->id())
+                        ->orWhere('from_id', auth()->id());
+                })
+                ->get();
+
+            $userIds = $chats->flatMap(function ($chat) {
+                return [$chat->to_id, $chat->from_id];
+            })->unique()->toArray();
+
+            $users = User::whereIn('id', $userIds)
+                ->where('role', User::ROLE_USER)
+                ->get(['id', 'name', 'email', 'phone', 'created_at']);
+
+            if ($users->isEmpty()) {
+                return response()->json([
+                    'message' => 'No users found for this property.'
+                ], 404);
+            }
+            return response()->json([
+                'user' => $users,
+                'message' => 'Users found successfuly.',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

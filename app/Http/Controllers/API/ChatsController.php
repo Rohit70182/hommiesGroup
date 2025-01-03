@@ -28,8 +28,9 @@ class ChatsController extends Controller
      *       @OA\MediaType(
      *           mediaType="multipart/form-data",
      *           @OA\Schema(
-     *              required={"to_id"},
+     *              required={"to_id","property_id"},
      *              @OA\Property(property="to_id", type="string", format="number", example="1"),
+     *              @OA\Property(property="property_id", type="string", format="number", example="1"),
      *              @OA\Property(property="message", type="string", format="text", example="message here"),
      *           ),
      *       ),
@@ -70,6 +71,7 @@ class ChatsController extends Controller
         $fromId = auth()->id();
         $validator = validator($request->all(), [
             'to_id' => 'required|numeric',
+            'property_id' => 'required|numeric',
             'message' => 'required_without:image',
             // 'image' => 'required_without:message|mimes:jpeg,jpg,png|nullable'
         ]);
@@ -107,6 +109,7 @@ class ChatsController extends Controller
         $chat->readers = $fromId . ',' . $chat->to_id;
         $chat->type_id = Chat::USER_MESSAGE;
         $chat->is_read = Chat::READ_NO;
+        $chat->property_id = $request->property_id;
         $chat->message_type = $messageType;
 
         if ($request->hasfile('image')) {

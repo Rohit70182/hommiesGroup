@@ -117,6 +117,10 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'markAsUnsold'
         ]);
+        Route::get('/user-list', [
+            \App\Http\Controllers\API\PropertyController::class,
+            'getUserList'
+        ]);
     });
 });
 

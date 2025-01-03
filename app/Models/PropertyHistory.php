@@ -11,6 +11,10 @@ class PropertyHistory extends Model
 
     const STATE_ACTIVE = 1;
 
+    const SOLD_INSIDE_PLATFORM = 0;
+
+    const SOLD_OUTSIDE_PLATFORM = 1;
+
     protected $table = 'property_history';
 
     protected $fillable = [
