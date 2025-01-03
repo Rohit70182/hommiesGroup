@@ -1081,7 +1081,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * @OA\Delete(
+     * @OA\Post(
      *      path="/property/deleteProperty/{id}",
      *      operationId="deleteProperty",
      *      tags={"property"},

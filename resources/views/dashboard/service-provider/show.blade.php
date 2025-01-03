@@ -26,9 +26,6 @@
 				</div>
 			</div>
 			<div class="card">
-				<div class="card-header ">
-					
-				</div>
 				<div class="card-body col-md-12">
 					<div class="form-group">
 						<div class="row">
@@ -40,7 +37,6 @@
 								@endif
 							</div>
 							<div class="col-md-8">
-								<!-- <strong>Information</strong><br> -->
 								<div class="table-responsive">
 									<table class="table table-user-information table table-bordered">
 										<tbody>
@@ -75,7 +71,6 @@
 												<td>
 													<span>{{$show->address}}</span>
 												</td>
-
 											</tr>
 											<tr>
 												<th>
@@ -110,10 +105,35 @@
 									</table>
 								</div>
 							</div>
+							<div class="col-md-12">
+								<div class="about" style="float:left;">
+									<h5 style="padding:5px;">About:</h5>
+									{{$show->getRole()}}
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-
+			</div>
+			<div class="card">
+				<div class="card-body col-md-12">
+					<div class="form-group">
+						<div class="row">
+							@if($show->id_proof_1)
+							<div class="col-md-6">
+								<h5 style="padding:5px;">ID Proof 1</h5>
+								<img src="{{ $show->id_proof_1_url }}" alt="ID Proof 1" class="img-thumbnail" style="max-width: 100%; height: auto;">
+							</div>
+							@endif
+							@if($show->id_proof_2)
+							<div class="col-md-6">
+								<h5 style="padding:5px;">ID Proof 2</h5>
+								<img src="{{ $show->id_proof_2_url }}" alt="ID Proof 2" class="img-thumbnail" style="max-width: 100%; height: auto;">
+							</div>
+							@endif
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

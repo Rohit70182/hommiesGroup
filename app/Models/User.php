@@ -161,11 +161,6 @@ class User extends Authenticatable
         return $this->hasMany(\Modules\Comment\Entities\Comment::class, 'created_by_id', 'id');
     }
 
-    public function custom()
-    {
-        return $this->hasMany(CustomReq::class);
-    }
-
     public function getResetUrl()
     {
         $key = '';
@@ -206,14 +201,6 @@ class User extends Authenticatable
         return null;
     }
 
-    public function getCertificationUrlAttribute()
-    {
-        if ($this->image) {
-            return asset('public/uploads/' . $this->certifications);
-        } else {
-            return null;
-        }
-    }
     public function getUnreadCountAttribute()
     {
         if (Auth::check()) {

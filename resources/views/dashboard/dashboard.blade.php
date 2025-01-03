@@ -356,7 +356,7 @@ use App\Models\User;
          </div>
       </div>
    </div>
-   <div class="row-sm row">
+   <!-- <div class="row-sm row">
       <div class="col-xl-4 col-lg-12 col-md-12">
          <div class="card">
             <div class="pb-1 card-header">
@@ -966,7 +966,7 @@ use App\Models\User;
             </div>
          </div>
       </div>
-   </div>
+   </div> -->
 
 </div>
 
