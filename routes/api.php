@@ -123,7 +123,22 @@ Route::prefix('property')->group(function () {
         ]);
     });
 });
-
+Route::prefix('roommate')->group(function () {
+    Route::group([
+        'middleware' => [
+            'auth:sanctum'
+        ]
+    ], function () {
+        Route::post('/findRoommate', [
+            \App\Http\Controllers\API\RoommateController::class,
+            'findRoommate'
+        ]);
+        Route::get('/roommate-list', [
+            \App\Http\Controllers\API\RoommateController::class,
+            'roommateList'
+        ]);
+    });
+});
 Route::prefix('amanity')->group(function () {
     Route::get('/amenities', [
         \App\Http\Controllers\API\AmenityController::class,

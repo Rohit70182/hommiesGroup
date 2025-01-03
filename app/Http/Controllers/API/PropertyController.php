@@ -169,7 +169,11 @@ class PropertyController extends Controller
         $infants = $request->get('infants', null);
         $propertyAmenity = $request->get('property_amenity', null);
 
-        $propertiesQuery = Property::query()->where('state_id', Property::STATE_PENDING);
+        $propertiesQuery = Property::query();
+
+        if (auth()->user()->role == User::ROLE_USER) {
+            $propertiesQuery->where('state_id', Property::STATE_PENDING);
+        }
 
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
             $propertiesQuery->where('created_by_id', auth()->id());
@@ -254,9 +258,10 @@ class PropertyController extends Controller
                 'message' => 'Property list fetched successfully.'
             ], 200);
         } else {
-            return response()->json(['message' => 'No properties found.'], 404);
+            return response()->json(['message' => 'No properties found.'], 400);
         }
     }
+
     /**
      * @OA\Get(
      *      path="/property/listByRating",
@@ -321,7 +326,7 @@ class PropertyController extends Controller
                 'message' => 'Property list sorted by rating fetched successfully.'
             ], 200);
         } else {
-            return response()->json(['message' => 'No properties found.'], 404);
+            return response()->json(['message' => 'No properties found.'], 400);
         }
     }
 
@@ -695,7 +700,7 @@ class PropertyController extends Controller
             $property = Property::with(['propertyAmenities.amenity', 'images', 'user'])->find($id);
 
             if (!$property) {
-                return response()->json(['message' => 'Property not found.'], 404);
+                return response()->json(['message' => 'Property not found.'], 400);
             }
 
             $item = Item::where([
@@ -724,6 +729,7 @@ class PropertyController extends Controller
                 'infants' => $property->infants,
                 'town' => $property->town,
                 'area' => $property->area,
+                'state_id' => $property->state_id,
                 'zipcode' => $property->zipcode,
                 'country' => $property->country,
                 'is_favorite' => $isFavorite,
@@ -820,7 +826,7 @@ class PropertyController extends Controller
             ->first();
 
         if (!$property) {
-            return response()->json(['message' => 'Property not found.'], 404);
+            return response()->json(['message' => 'Property not found.'], 400);
         }
         if (auth()->user()->role != User::ROLE_SERVICE_PROVIDER || auth()->id() != $property->created_by_id) {
             return response()->json(['message' => 'Unauthorized.'], 403);
@@ -972,7 +978,7 @@ class PropertyController extends Controller
             } else {
                 return response()->json([
                     'message' => 'No providers are in your favourites'
-                ], 404);
+                ], 400);
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -1072,7 +1078,7 @@ class PropertyController extends Controller
             } else {
                 return response()->json([
                     'message' => 'Property not found'
-                ], 404);
+                ], 400);
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -1083,18 +1089,21 @@ class PropertyController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/property/deleteProperty/{id}",
+     *      path="/property/deleteProperty",
      *      operationId="deleteProperty",
      *      tags={"property"},
      *      security={{ "sanctum": {} }},
      *      summary="Delete a property",
      *      description="Delete a property with all associated data",
-     *      @OA\Parameter(
-     *          name="id",
-     *          in="path",
+     *      @OA\RequestBody(
      *          required=true,
-     *          description="ID of the property to delete",
-     *          @OA\Schema(type="integer")
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(
+     *                  required={"property_id"},
+     *                  @OA\Property(property="property_id", type="integer", example="1"),
+     *              )
+     *          )
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -1119,15 +1128,16 @@ class PropertyController extends Controller
      *      )
      * )
      */
-    public function deleteProperty($id)
+    public function deleteProperty(Request $request)
     {
+        $id = $request->input('property_id');
         if (auth()->user()->role != User::ROLE_SERVICE_PROVIDER) {
             return response()->json(['message' => 'Unauthorized to delete property.'], 403);
         }
         $property = Property::find($id);
 
         if (!$property) {
-            return response()->json(['message' => 'Property not found.'], 404);
+            return response()->json(['message' => 'Property not found.'], 400);
         }
 
         if ($property->created_by_id !== auth()->id()) {
@@ -1175,7 +1185,7 @@ class PropertyController extends Controller
      *      @OA\RequestBody(
      *          required=true,
      *          @OA\MediaType(
-     *              mediaType="application/x-www-form-urlencoded",
+     *              mediaType="multipart/form-data",
      *              @OA\Schema(
      *                  type="object",
      *                  required={"property_id"},
@@ -1249,7 +1259,7 @@ class PropertyController extends Controller
             } else {
                 return response()->json([
                     'message' => 'Property not found.'
-                ], 404);
+                ], 400);
             }
 
             $propertyHistory = new PropertyHistory();
@@ -1283,7 +1293,7 @@ class PropertyController extends Controller
      *      @OA\RequestBody(
      *          required=true,
      *          @OA\MediaType(
-     *              mediaType="application/x-www-form-urlencoded",
+     *              mediaType="multipart/form-data",
      *              @OA\Schema(
      *                  type="object",
      *                  required={"property_id"},
@@ -1348,7 +1358,7 @@ class PropertyController extends Controller
             } else {
                 return response()->json([
                     'message' => 'Property not found or is not sold.'
-                ], 404);
+                ], 400);
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -1435,7 +1445,7 @@ class PropertyController extends Controller
             $propertyId = $request->input('property_id');
             $property = Property::where('id', $propertyId)->first();
             if (empty($property)) {
-                return response()->json(['message' => 'Property Not Found'], 404);
+                return response()->json(['message' => 'Property Not Found'], 400);
             }
             $chats = Chat::where('property_id', $propertyId)
                 ->where(function ($query) {
@@ -1450,12 +1460,12 @@ class PropertyController extends Controller
 
             $users = User::whereIn('id', $userIds)
                 ->where('role', User::ROLE_USER)
-                ->get(['id', 'name', 'email', 'phone', 'created_at']);
+                ->get();
 
             if ($users->isEmpty()) {
                 return response()->json([
                     'message' => 'No users found for this property.'
-                ], 404);
+                ], 400);
             }
             return response()->json([
                 'user' => $users,

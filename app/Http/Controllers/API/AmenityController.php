@@ -41,7 +41,7 @@ class AmenityController extends Controller
                 'message' => 'Amenities list fetched successfully.'
             ], 200);
         } else {
-            return response()->json(['message' => 'No amenities found.'], 404);
+            return response()->json(['message' => 'No amenities found.'], 400);
         }
     }
 }

@@ -78,7 +78,7 @@ class ChatsController extends Controller
 
         if ($validator->fails()) {
             return response([
-                "status" => 422,
+                "status" => 400,
                 'message' => $validator->errors()
             ]);
         }
@@ -97,7 +97,7 @@ class ChatsController extends Controller
             ]);
             if ($validator->fails()) {
                 return response([
-                    "status" => 422,
+                    "status" => 400,
                     'message' => $validator->errors()
                 ]);
             }
@@ -129,7 +129,7 @@ class ChatsController extends Controller
         } else {
             return response([
                 'message' => 'Unexpected error occurred'
-            ], 404);
+            ], 400);
         }
     }
 
@@ -192,9 +192,9 @@ class ChatsController extends Controller
 
         if ($validator->fails()) {
             return response([
-                "status" => 422,
+                "status" => 400,
                 'message' => $validator->errors()
-            ], 422);
+            ], 400);
         }
 
         $userId = $request->input('user_id');
@@ -289,13 +289,16 @@ class ChatsController extends Controller
      */
     public function chatList(Request $request)
     {
+        // Fetch all chats where the current user is either the "from" or "to"
         $chats = Chat::query()
             ->where('from_id', Auth::id())
             ->orWhere('to_id', Auth::id())
             ->get();
 
         $ids = [];
+        $properties = [];
 
+        // Loop through the chats to collect user ids and associate property_ids
         foreach ($chats as $chat) {
             if ($chat->from_id != Auth::id()) {
                 $ids[] = $chat->from_id;
@@ -303,16 +306,20 @@ class ChatsController extends Controller
             if ($chat->to_id != Auth::id()) {
                 $ids[] = $chat->to_id;
             }
+
+            $properties[] = $chat->property_id;
         }
-
         $ids = array_unique($ids);
-
+        $properties = array_unique($properties);
         $users = User::whereIn('id', $ids)->get();
-
-        if ($users->isNotEmpty()) {
+        $usersWithProperty = $users->map(function ($user) use ($properties) {
+            $user->property_id = isset($properties[0]) ? $properties[0] : null;
+            return $user;
+        });
+        if ($usersWithProperty->isNotEmpty()) {
             return response([
-                'chat' => $users,
-                'message' => 'Chats list'
+                'chat' => $usersWithProperty,
+                'message' => 'Chats list with property details'
             ], 200);
         } else {
             return response([
@@ -321,6 +328,7 @@ class ChatsController extends Controller
             ], 400);
         }
     }
+
 
     /**
      * @OA\Get(
@@ -379,7 +387,7 @@ class ChatsController extends Controller
             return response()->json([
                 "status" => "error",
                 "message" => $validator->errors()
-            ], 422);
+            ], 400);
         }
 
         $userId = $request->input('user_id');

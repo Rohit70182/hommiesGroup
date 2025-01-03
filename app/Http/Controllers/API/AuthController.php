@@ -297,7 +297,7 @@ class AuthController extends Controller
 
             return response([
                 'message' => $validator->errors()
-            ], 422);
+            ], 400);
         }
 
         $user = User::where('email', $fields['email'])->first();
@@ -796,9 +796,9 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response([
-                'status' => 422,
+                'status' => 400,
                 'message' => $validator->errors(),
-            ], 422);
+            ], 400);
         }
 
         $pageId = $request->get('page');
