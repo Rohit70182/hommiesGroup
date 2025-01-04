@@ -105,7 +105,7 @@ Route::prefix('property')->group(function () {
             \App\Http\Controllers\API\PropertyController::class,
             'getPropertyDetail'
         ]);
-        Route::delete('/deleteProperty/{id}', [
+        Route::post('/deleteProperty/{id}', [
             \App\Http\Controllers\API\PropertyController::class,
             'deleteProperty'
         ]);
@@ -136,6 +136,14 @@ Route::prefix('roommate')->group(function () {
         Route::get('/roommate-list', [
             \App\Http\Controllers\API\RoommateController::class,
             'roommateList'
+        ]);
+        Route::post('/updateRoommate/{id}', [
+            \App\Http\Controllers\API\RoommateController::class,
+            'updateRoommate'
+        ]);
+        Route::post('/markAsSold', [
+            \App\Http\Controllers\API\RoommateController::class,
+            'markAsSold'
         ]);
     });
 });

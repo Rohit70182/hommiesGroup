@@ -2744,7 +2744,7 @@
                             "schema": {
                                 "required": [
                                     "sleep_schedule",
-                                    "prperty_id",
+                                    "property_id",
                                     "lifestyle_habits",
                                     "social_preferences",
                                     "pet_friendly",
@@ -2752,7 +2752,7 @@
                                     "cooking_kitchen_usage"
                                 ],
                                 "properties": {
-                                    "prperty_id": {
+                                    "property_id": {
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -2877,6 +2877,237 @@
                     },
                     "401": {
                         "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/roommate/updateRoommate/{id}": {
+            "post": {
+                "tags": [
+                    "roommate"
+                ],
+                "summary": "Update roommate preferences",
+                "description": "This API allows users to update their roommate preferences.",
+                "operationId": "updateRoommate",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Roommate Preference ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "sleep_schedule",
+                                    "property_id",
+                                    "lifestyle_habits",
+                                    "social_preferences",
+                                    "pet_friendly",
+                                    "study_habits",
+                                    "cooking_kitchen_usage"
+                                ],
+                                "properties": {
+                                    "property_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "sleep_schedule": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "lifestyle_habits": {
+                                        "type": "string",
+                                        "example": "1,2,3"
+                                    },
+                                    "social_preferences": {
+                                        "type": "string",
+                                        "example": "1,2"
+                                    },
+                                    "pet_friendly": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "study_habits": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "cooking_kitchen_usage": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Roommate preferences updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Roommate preferences updated successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or roommate preference not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input data or Roommate Preference not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized action",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized. Only users can update this."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/roommate/markAsSold": {
+            "post": {
+                "tags": [
+                    "roommate"
+                ],
+                "summary": "Mark roommate preference as sold",
+                "description": "This API allows users to mark a roommate preference as sold based on roommate_reference_id and user_id.",
+                "operationId": "markAsSold",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "roommate_reference_id",
+                                    "user_id"
+                                ],
+                                "properties": {
+                                    "roommate_reference_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Roommate preference marked as sold successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Roommate preference marked as sold successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or data not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid input or roommate preference not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {

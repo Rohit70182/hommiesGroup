@@ -48,30 +48,21 @@ class RoommatePreference extends Model
         'study_habits',
         'cooking_kitchen_usage',
         'state_id',
+        'created_by_id'
     ];
 
-    protected $casts = [
-        'lifestyle_habits' => 'array',
-        'social_preferences' => 'array',
-    ];
-
-    public function setLifestyleHabitsAttribute($value)
+    public function createdBy()
     {
-        $this->attributes['lifestyle_habits'] = implode(',', $value);
+        return $this->belongsTo(User::class, 'created_by_id');
     }
 
-    public function getLifestyleHabitsAttribute($value)
+    public function property()
     {
-        return explode(',', $value);
+        return $this->belongsTo(Property::class, 'property_id');
     }
 
-    public function setSocialPreferencesAttribute($value)
+    public function soldToUser()
     {
-        $this->attributes['social_preferences'] = implode(',', $value);
-    }
-
-    public function getSocialPreferencesAttribute($value)
-    {
-        return explode(',', $value);
+        return $this->belongsTo(User::class, 'sold_to_user');
     }
 }
