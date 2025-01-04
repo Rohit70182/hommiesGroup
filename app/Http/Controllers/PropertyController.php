@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Property;
+use App\Models\PropertyAmenity;
+use App\Models\PropertyHistory;
+use App\Models\PropertyImage;
 use Illuminate\Http\Request;
+use Modules\Chat\Entities\Chat;
 
 class PropertyController extends Controller
 {
-
-    // to be fixed..
-    
     public function index()
     {
-        $event = Event::orderBy('id', 'desc')->get();
-        $services = Service::get();
-        return view('event.index', compact('event', 'services'));
+        $properties = Property::orderBy('id', 'desc')->get();
+        return view('property.property.property', compact('properties'));
+    }
+
+    public function show($id)
+    {
+        $property = Property::find($id);
+        return view('property.property.show', compact('property'));
     }
 
     public function store(Request $request)
@@ -41,12 +48,7 @@ class PropertyController extends Controller
         }
     }
 
-    public function show($id)
 
-    {
-        $events = Event::find($id);
-        return view('event.show', compact('events'));
-    }
     public function edit($id)
     {
         $services = Service::where('state_id', Service::STATE_ACTIVE)->get();
@@ -86,30 +88,34 @@ class PropertyController extends Controller
 
     public function destroy($id)
     {
-        $event = Event::where('id', $id);
+        $event = Property::where('id', $id);
 
         if (!empty($event)) {
+            PropertyHistory::where('property_id', $id)->delete();
+            PropertyImage::where('property_id', $id)->delete();
+            PropertyAmenity::where('property_id', $id)->delete();
+            // Chat::where('property_id', $id)->delete();
             $event->delete();
         }
-        return redirect('/event/list')->with('success', 'Event deleted successfully.');
+
+        return redirect('/dashboard/property')->with('success', 'Property deleted successfully.');
     }
 
     public function softDelete($id)
     {
-
         try {
-            $user = Event::where('id', $id)->first();
-
-            if ($user->state_id == Event::STATE_INACTIVE) {
-                $user->state_id = Event::STATE_ACTIVE;
-                $user->save();
+            $property = Property::where('id', $id)->first();
+            if ($property->state_id == Property::STATE_SOLD) {
+                return redirect()->back()->with('error', 'This property is sold and cannot be modified.');
+            }
+            if ($property->state_id == Property::STATE_DELETED) {
+                $property->state_id = Property::STATE_PENDING;
+                $property->save();
                 return redirect()->back();
-                //                 return redirect()->back()->with('error', "Account not found");
             } else {
-                $user->state_id = Event::STATE_INACTIVE;
-                $user->save();
+                $property->state_id = Property::STATE_DELETED;
+                $property->save();
                 return redirect()->back();
-                //                 return redirect()->back()->with('error', "Account not found");
             }
         } catch (\Exception $e) {
             return redirect()->back()->with($e->getMessage());

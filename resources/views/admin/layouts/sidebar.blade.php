@@ -21,21 +21,32 @@
           <a class="nav-link" data-toggle="collapse" href="#user" role="button" aria-expanded="false" aria-controls="manage">
             <i class="fa fa-user"></i><span>User Management</span>
           </a>
-
           <div class="collapse" id="user" data-parent="#accordion">
             <ul class="sub-navbar-nav">
-
               <li class="nav-item">
                 <a class="nav-link" href="{{ url('/dashboard/users') }}"><i class="fa fa-users"></i> <span>Users</span></a>
               </li>
-
               <li class="nav-item">
                 <a class="nav-link" href="{{ url('/dashboard/service') }}"><i class="fa fa-users"></i> <span>Service Provider</span></a>
               </li>
-
             </ul>
           </div>
+        </li>
 
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="collapse" href="#property" role="button" aria-expanded="false" aria-controls="manage">
+            <i class="fa fa-user"></i><span>Property Management</span>
+          </a>
+          <div class="collapse" id="property" data-parent="#accordion">
+            <ul class="sub-navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url('/dashboard/property') }}"><i class="fa fa-users"></i> <span>Propeties</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url('/dashboard/amenity') }}"><i class="fa fa-users"></i> <span>Amenities</span></a>
+              </li>
+            </ul>
+          </div>
         </li>
 
         <li class="nav-item">

@@ -25,4 +25,21 @@ class PropertyHistory extends Model
     ];
 
     public $timestamps = true;
+
+    public static function getSoldPlatform($id = null)
+    {
+        $list = array(
+            self::SOLD_INSIDE_PLATFORM => "Inside Platfrom",
+            self::SOLD_OUTSIDE_PLATFORM => "Ouside Platform"
+        );
+        if ($id === null)
+            return $list;
+        return isset($list[$id]) ? $list[$id] : 'Not Defined';
+    }
+
+    public function getSold()
+    {
+        $list = self::getSoldPlatform();
+        return isset($list[$this->sold_outside]) ? $list[$this->sold_outside] : 'Not Defined';
+    }
 }

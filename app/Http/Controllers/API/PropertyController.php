@@ -171,8 +171,12 @@ class PropertyController extends Controller
 
         $propertiesQuery = Property::query();
 
-        if (auth()->user()->role == User::ROLE_USER) {
+        if (auth()->user()->role == User::ROLE_USER && auth()->id() != $propertiesQuery->sold_to) {
             $propertiesQuery->where('state_id', Property::STATE_PENDING);
+        }
+
+        if (auth()->user()->role == User::ROLE_USER && auth()->id() == $propertiesQuery->sold_to) {
+            $propertiesQuery->where('sold_to', $propertiesQuery->sold_to);
         }
 
         if (auth()->user()->role == User::ROLE_SERVICE_PROVIDER) {
@@ -738,6 +742,7 @@ class PropertyController extends Controller
                 'property_images_url' => $property->property_images_url,
                 'property_amanities_image' => $property->property_amanities_image,
                 'property_amenities' => $property->propertyAmenities,
+                'testimonials' => $property->testimonials,
                 // 'images' => $property->images,
                 'user' => $property->user,
                 'testimonials' => $property->testimonials,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AmenityController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\LoggerController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Components\CommentComponentController;
+use App\Http\Controllers\PropertyController;
 use Spatie\Sitemap\SitemapGenerator;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,7 +22,7 @@ Route::get('sitemap', function () {
     SitemapGenerator::create('http://localhost/demo-service-yii2-1836')->writeToFile('sitemap.xml');
     return "sitemap created";
 });
-    
+
 //Components
 Route::post('/dashboard/comment', [CommentComponentController::class, 'store']);
 
@@ -84,13 +86,26 @@ Route::middleware('auth')->group(function () {
         Route::put('/service/update/{id}', [UserController::class, 'serviceUpdate']);
         Route::get('/service/show/{id}', [UserController::class, 'serviceShow']);
 
+
+        // Porperty 
+        Route::get('/property', [PropertyController::class, 'index']);
+        Route::get('/property/show/{id}', [PropertyController::class, 'show']);
+        Route::get('/property/softDelete/{id}', [PropertyController::class, 'softDelete']);
+        Route::get('/property/delete/{id}', [PropertyController::class, 'destroy']);
+
+
+        //property amenity
+        Route::get('/amenity', [AmenityController::class, 'index']);
+        Route::get('/amenity/show/{id}', [AmenityController::class, 'show']);
+        Route::get('/amenity/softDelete/{id}', [AmenityController::class, 'softDelete']);
+        Route::get('/amenity/delete/{id}', [AmenityController::class, 'destroy']);
     });
 
 
     Route::middleware('admin')->group(function () {
 
         Route::get('services', [DashboardController::class, 'displaylogs']);
-        
+
         Route::get('cancel-reasons', [DashboardController::class, 'cancelReasons'])->name('cancelReasons');
         Route::get('cancel-reasons/edit/{id}', [DashboardController::class, 'editcancelReasons'])->name('editcancelReasons');
         Route::put('cancel-reasons/update/{id}', [DashboardController::class, 'updatecancelReasons'])->name('updatereason');
@@ -100,7 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::post('cancel-reasons/save', [DashboardController::class, 'storecancelReasons'])->name('storereason');
         Route::get('orders', [DashboardController::class, 'orders'])->name('orders');
         // Route::get('orders/show/{id}', [DashboardController::class, 'showOrders'])->name('order.show');
-        
+
         //Files
         Route::get('files', [DashboardController::class, 'Showfiles']);
 
@@ -126,11 +141,9 @@ Route::middleware('auth')->group(function () {
         Route::get('open', [ImageUploadController::class, 'showUploadPage']);
         Route::post('upload', [ImageUploadController::class, 'fileUpload']);
 
-        
+
         //Error logs
         Route::get('dashboard/logs', [LoggerController::class, 'logs']);
         Route::get('dashboad/logs/delete/{id}', [LoggerController::class, 'destroy']);
-
     });
-    
 });

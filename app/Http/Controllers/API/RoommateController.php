@@ -69,7 +69,7 @@ class RoommateController extends Controller
                 'sleep_schedule' => 'required|integer',
                 'lifestyle_habits' => 'required|string|regex:/^(\d+(,\d+)*)$/',
                 'social_preferences' => 'required|string|regex:/^(\d+(,\d+)*)$/',
-                'pet_friendly' => 'required|in:0,1',
+                'pet_friendly' => 'required|integer',
                 'study_habits' => 'required|integer',
                 'property_id' => 'integer',
                 'cooking_kitchen_usage' => 'required|integer',
@@ -83,15 +83,11 @@ class RoommateController extends Controller
             }
 
             $propertyId = $request->input('property_id');
-
-            $property = Property::where('id', $propertyId)->first();
-            $propertyIsSoldToUser = Property::where('id', $propertyId)
-                ->where('sold_to', auth()->id())
-                ->first();
-            if (empty($property)) {
+            $property = Property::find($propertyId);
+            if (!$property) {
                 return response()->json(['message' => 'Property Not Found'], 400);
             }
-            if (empty($propertyIsSoldToUser)) {
+            if ($property->sold_to != auth()->id()) {
                 return response()->json(['message' => 'You are not allowed to make ad for roommate, Because property is sold to this user'], 400);
             }
             $roommatePreferences = new RoommatePreference();
